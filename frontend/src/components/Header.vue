@@ -1,23 +1,36 @@
 <template>
-  <header class="bg-blue-500 text-white p-4 flex justify-between items-center">
-    <h1 class="text-xl font-bold">My E-Commerce Site</h1>
-    <nav>
-      <ul class="flex space-x-4">
-        <li><a href="/" class="hover:underline">Home</a></li>
-        <li><a href="/shop" class="hover:underline">Shop</a></li>
-        <li><a href="/about" class="hover:underline">About</a></li>
-        <li><a href="/contact" class="hover:underline">Contact</a></li>
-      </ul>
-    </nav>
-  </header>
+  <nav class="navbar navbar-expand-lg navbar-dark bg-primary">
+    <div class="container">
+      <a class="navbar-brand" href="#">E-Shop</a>
+
+      <button 
+        class="navbar-toggler" 
+        type="button" 
+        data-bs-toggle="collapse" 
+        data-bs-target="#navbarNav"
+      >
+        <span class="navbar-toggler-icon"></span>
+      </button>
+
+      <div class="collapse navbar-collapse" id="navbarNav">
+        <ul class="navbar-nav ms-auto">
+          <li class="nav-item">
+            <router-link to="/" class="nav-link">Home</router-link>
+          </li>
+          <li class="nav-item">
+             <router-link to="/shop" class="nav-link">Shop</router-link>
+          </li>
+          <li class="nav-item">
+            <router-link to="/men" class="nav-link">Men</router-link>
+          </li>
+          <li class="nav-item">
+             <router-link to="/women" class="nav-link">Women</router-link>
+          </li>
+        </ul>
+      </div>
+    </div>
+  </nav>
 </template>
 
-<script>
-export default {
-  name: "Header", // <-- this is enough
-};
+<script setup>
 </script>
-
-<style scoped>
-/* custom styles if needed */
-</style>
