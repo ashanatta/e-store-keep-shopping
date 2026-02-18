@@ -11,12 +11,23 @@
         </button>
       </div>
     </div>
+    
+      <ShopbyCategory />
+     
+   <Footer />
   </div>
 </template>
 
 <script>
+import Footer from '@/components/Footer.vue';
+import ShopbyCategory from '@/components/home/ShopbyCategory.vue';
+
 export default {
-  name: "Home"
+  name: "Home",
+   components: {
+    ShopbyCategory,
+    Footer
+  }
 }
 </script>
 
