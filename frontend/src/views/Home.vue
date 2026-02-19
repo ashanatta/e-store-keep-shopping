@@ -41,18 +41,20 @@
       </div>
     </section>
     <div><WinterSale /></div>
+    <div>
+      <RecommendationProducts />
+    </div>
 
-    <!-- <Footer /> -->
 
   </div>
 </template>
 
 
 <script>
-import Footer from "@/components/Footer.vue";
 import ShopbyCategory from "@/components/home/ShopbyCategory.vue";
 import FeaturedProduct from "@/components/home/FeaturedProduct.vue";
 import WinterSale from "@/components/home/WinterSale.vue";
+import RecommendationProducts from "@/components/home/RecommendationProducts.vue";
 
 export default {
   name: "Home",
@@ -60,7 +62,7 @@ export default {
     ShopbyCategory,
     FeaturedProduct,
     WinterSale,
-    Footer,
+    RecommendationProducts
   },
   methods: {
   handleWishlist(id) {
