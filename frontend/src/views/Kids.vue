@@ -1,5 +1,5 @@
 <template>
-  <ProductListingLayout title="Men's Collection" category="Men" />
+  <ProductListingLayout title="Kids Collection" category="Kids" />
 </template>
 
 <script setup>

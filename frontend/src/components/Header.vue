@@ -55,7 +55,9 @@
           <!-- Icons -->
           <div class="d-flex gap-3 mt-3 mt-lg-0">
             <i class="bi bi-person icon"></i>
-            <i class="bi bi-cart icon"></i>
+            <router-link to="/cart" class="icon-link">
+              <i class="bi bi-cart icon"></i>
+            </router-link>
           </div>
 
         </div>
@@ -89,6 +91,13 @@
 
 .icon:hover {
   color: black;
+}
+
+.icon-link {
+  display: inline-flex;
+  align-items: center;
+  color: inherit;
+  text-decoration: none;
 }
 
 .router-link-exact-active {
