@@ -1,11 +1,7 @@
 <template>
-  <div class="container mt-4">
-    <h2>Welcome to Women Page</h2>
-  </div>
+  <ProductListingLayout title="Women's Collection" category="Women" />
 </template>
 
-<script>
-export default {
-  name: 'Women'
-}
+<script setup>
+import ProductListingLayout from "@/components/productListing/ProductListingLayout.vue"
 </script>
