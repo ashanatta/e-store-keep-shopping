@@ -163,6 +163,10 @@ const props = defineProps({
   category: {
     type: String,
     default: "all"
+  },
+  saleOnly: {
+    type: Boolean,
+    default: false
   }
 })
 
@@ -352,6 +356,10 @@ const filteredProducts = computed(() => {
 
   if (props.category !== "all") {
     result = result.filter((product) => product.category === props.category)
+  }
+
+  if (props.saleOnly) {
+    result = result.filter((product) => product.originalPrice)
   }
 
   result = result.filter((product) => product.price <= maxPrice.value)

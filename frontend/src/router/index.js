@@ -10,6 +10,8 @@ import Shop from '@/views/Shop.vue'
 import ProductDetail from '@/views/ProductDetail.vue'
 import Cart from '@/views/Cart.vue'
 import Checkout from '@/views/Checkout.vue'
+import Sales from '@/views/Sales.vue'
+import About from '@/views/About.vue'
 
 // Define routes
 const routes = [
@@ -21,6 +23,8 @@ const routes = [
   { path: '/product/:id', name: 'ProductDetail', component: ProductDetail },
   { path: '/cart', name: 'Cart', component: Cart },
   { path: '/checkout', name: 'Checkout', component: Checkout },
+  { path: '/sales', name: 'Sales', component: Sales },
+  { path: '/about', name: 'About', component: About },
 ]
 
 // Create router
