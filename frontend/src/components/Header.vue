@@ -53,8 +53,28 @@
           </div>
 
           <!-- Icons -->
-          <div class="d-flex gap-3 mt-3 mt-lg-0">
-            <i class="bi bi-person icon"></i>
+           
+          <div class="d-flex gap-3 mt-3 mt-lg-0 align-items-center">
+            <template v-if="!isAuthenticated">
+              <router-link to="/login" class="btn btn-outline-dark btn-sm">Login</router-link>
+              <router-link to="/register" class="btn btn-dark btn-sm">Register</router-link>
+            </template>
+            <template v-else>
+              <div class="dropdown">
+                <button
+                  class="btn btn-link text-decoration-none dropdown-toggle p-0 d-flex align-items-center"
+                  data-bs-toggle="dropdown"
+                  aria-expanded="false"
+                >
+                  <div class="avatar-initial me-2">{{ initial }}</div>
+                </button>
+                <ul class="dropdown-menu dropdown-menu-end">
+                  <li>
+                    <button class="dropdown-item" @click="handleLogout">Logout</button>
+                  </li>
+                </ul>
+              </div>
+            </template>
             <router-link to="/cart" class="icon-link">
               <i class="bi bi-cart icon"></i>
             </router-link>
@@ -67,7 +87,21 @@
   </nav>
 </template>
 
-<script setup></script>
+<script setup>
+import { computed } from "vue"
+import { useAuth } from "@/composables/useAuth.js"
+
+const { user, isAuthenticated, logout } = useAuth()
+
+const initial = computed(() => {
+  const name = user.value?.name || ""
+  return name.trim().charAt(0).toUpperCase() || "U"
+})
+
+const handleLogout = async () => {
+  await logout()
+}
+</script>
 
 <style scoped>
 .search-box {
@@ -102,5 +136,17 @@
 
 .router-link-exact-active {
   font-weight: bold;
+}
+
+.avatar-initial {
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  background: #111827;
+  color: #fff;
+  display: grid;
+  place-items: center;
+  font-size: 12px;
+  font-weight: 700;
 }
 </style>

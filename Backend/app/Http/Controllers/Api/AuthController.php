@@ -30,7 +30,17 @@ class AuthController extends Controller
         return response()->json([
             'user' => $user,
             'token' => $token,
-        ], 201);
+        ], 201)->cookie(
+            'auth_token',
+            $token,
+            60 * 24 * 7,
+            '/',
+            null,
+            false,
+            true,
+            false,
+            'lax'
+        );
     }
 
     public function login(Request $request)
@@ -54,7 +64,17 @@ class AuthController extends Controller
         return response()->json([
             'user' => $user,
             'token' => $token,
-        ]);
+        ])->cookie(
+            'auth_token',
+            $token,
+            60 * 24 * 7,
+            '/',
+            null,
+            false,
+            true,
+            false,
+            'lax'
+        );
     }
 
     public function logout(Request $request)
@@ -63,7 +83,17 @@ class AuthController extends Controller
 
         return response()->json([
             'message' => 'Logged out',
-        ]);
+        ])->cookie(
+            'auth_token',
+            '',
+            -1,
+            '/',
+            null,
+            false,
+            true,
+            false,
+            'lax'
+        );
     }
 
     public function logoutAll(Request $request)
@@ -72,6 +102,16 @@ class AuthController extends Controller
 
         return response()->json([
             'message' => 'Logged out from all devices',
-        ]);
+        ])->cookie(
+            'auth_token',
+            '',
+            -1,
+            '/',
+            null,
+            false,
+            true,
+            false,
+            'lax'
+        );
     }
 }
