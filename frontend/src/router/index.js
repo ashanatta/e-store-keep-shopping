@@ -12,6 +12,8 @@ import Cart from '@/views/Cart.vue'
 import Checkout from '@/views/Checkout.vue'
 import Sales from '@/views/Sales.vue'
 import About from '@/views/About.vue'
+import Login from '@/views/Login.vue'
+import Register from '@/views/Register.vue'
 
 // Define routes
 const routes = [
@@ -25,6 +27,8 @@ const routes = [
   { path: '/checkout', name: 'Checkout', component: Checkout },
   { path: '/sales', name: 'Sales', component: Sales },
   { path: '/about', name: 'About', component: About },
+  { path: '/login', name: 'Login', component: Login },
+  { path: '/register', name: 'Register', component: Register },
 ]
 
 // Create router
