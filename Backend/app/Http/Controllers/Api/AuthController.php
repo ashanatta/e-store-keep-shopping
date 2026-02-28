@@ -28,19 +28,9 @@ class AuthController extends Controller
         $token = $user->createToken($data['device_name'] ?? 'api')->plainTextToken;
 
         return response()->json([
-            'user' => $user,
+            'user' => array_merge($user->toArray(), ['is_admin' => $user->is_admin]),
             'token' => $token,
-        ], 201)->cookie(
-            'auth_token',
-            $token,
-            60 * 24 * 7,
-            '/',
-            null,
-            false,
-            true,
-            false,
-            'lax'
-        );
+        ], 201);
     }
 
     public function login(Request $request)
@@ -62,19 +52,9 @@ class AuthController extends Controller
         $token = $user->createToken($data['device_name'] ?? 'api')->plainTextToken;
 
         return response()->json([
-            'user' => $user,
+            'user' => array_merge($user->toArray(), ['is_admin' => $user->is_admin]),
             'token' => $token,
-        ])->cookie(
-            'auth_token',
-            $token,
-            60 * 24 * 7,
-            '/',
-            null,
-            false,
-            true,
-            false,
-            'lax'
-        );
+        ]);
     }
 
     public function logout(Request $request)
@@ -83,17 +63,7 @@ class AuthController extends Controller
 
         return response()->json([
             'message' => 'Logged out',
-        ])->cookie(
-            'auth_token',
-            '',
-            -1,
-            '/',
-            null,
-            false,
-            true,
-            false,
-            'lax'
-        );
+        ]);
     }
 
     public function logoutAll(Request $request)
@@ -102,16 +72,6 @@ class AuthController extends Controller
 
         return response()->json([
             'message' => 'Logged out from all devices',
-        ])->cookie(
-            'auth_token',
-            '',
-            -1,
-            '/',
-            null,
-            false,
-            true,
-            false,
-            'lax'
-        );
+        ]);
     }
 }

@@ -69,6 +69,9 @@
                   <div class="avatar-initial me-2">{{ initial }}</div>
                 </button>
                 <ul class="dropdown-menu dropdown-menu-end">
+                  <li v-if="isAdmin">
+                    <router-link to="/admin" class="dropdown-item">Admin Panel</router-link>
+                  </li>
                   <li>
                     <button class="dropdown-item" @click="handleLogout">Logout</button>
                   </li>
@@ -91,7 +94,7 @@
 import { computed } from "vue"
 import { useAuth } from "@/composables/useAuth.js"
 
-const { user, isAuthenticated, logout } = useAuth()
+const { user, isAuthenticated, isAdmin, logout } = useAuth()
 
 const initial = computed(() => {
   const name = user.value?.name || ""
