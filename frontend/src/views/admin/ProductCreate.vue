@@ -16,7 +16,15 @@
       </div>
       <div class="mb-3">
         <label for="category" class="form-label">Category</label>
-        <input type="text" class="form-control" id="category" v-model="product.category">
+        <select id="category" v-model="product.category_id" class="form-select" required>
+          <option value="" disabled>Select category</option>
+          <option v-for="c in categories" :key="c.id" :value="c.id">{{ c.name }}</option>
+        </select>
+        <div class="mt-2">
+          <router-link to="/admin/categories" class="text-decoration-none">
+            Manage categories
+          </router-link>
+        </div>
       </div>
       <div class="mb-3">
         <label for="image" class="form-label">Product Image</label>
@@ -29,17 +37,19 @@
 </template>
 
 <script setup>
-import { ref } from 'vue'
+import { onMounted, ref } from 'vue'
 import { useRouter } from 'vue-router'
 import axios from 'axios'
+import { useCategories } from '@/composables/useCategories.js'
 
 const router = useRouter()
+const { categories, fetchCategories } = useCategories()
 
 const product = ref({
   name: '',
   description: '',
   price: 0,
-  category: '',
+  category_id: '',
 })
 
 const imageFile = ref(null)
@@ -54,7 +64,7 @@ const handleSubmit = async () => {
     formData.append('name', product.value.name)
     formData.append('description', product.value.description)
     formData.append('price', product.value.price)
-    formData.append('category', product.value.category)
+    formData.append('category_id', product.value.category_id)
     if (imageFile.value) {
       formData.append('image', imageFile.value)
     }
@@ -71,6 +81,14 @@ const handleSubmit = async () => {
     alert('Failed to add product.')
   }
 }
+
+onMounted(async () => {
+  try {
+    await fetchCategories()
+  } catch (error) {
+    console.error('Error loading categories:', error)
+  }
+})
 </script>
 
 <style scoped>

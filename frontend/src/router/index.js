@@ -18,6 +18,7 @@ import AdminLayout from '@/views/admin/AdminLayout.vue'
 import ProductList from '@/views/admin/ProductList.vue'
 import ProductCreate from '@/views/admin/ProductCreate.vue'
 import ProductEdit from '@/views/admin/ProductEdit.vue'
+import CategoryList from '@/views/admin/CategoryList.vue'
 import { useAuth } from '@/composables/useAuth'
 
 // Define routes
@@ -43,6 +44,7 @@ const routes = [
       { path: 'products', name: 'AdminProducts', component: ProductList },
       { path: 'products/create', name: 'AdminProductCreate', component: ProductCreate },
       { path: 'products/:id/edit', name: 'AdminProductEdit', component: ProductEdit },
+      { path: 'categories', name: 'AdminCategories', component: CategoryList },
       // Other admin routes will go here
     ],
     meta: { requiresAuth: true, requiresAdmin: true } // Add meta fields for auth/admin checks

@@ -14,7 +14,9 @@ class ProductController extends Controller
      */
     public function index()
     {
-        return response()->json(Product::all());
+        return response()->json(
+            Product::with('category:id,name')->get()
+        );
     }
 
     /**
@@ -26,7 +28,7 @@ class ProductController extends Controller
             'name' => 'required|string|max:255',
             'description' => 'nullable|string',
             'price' => 'required|numeric|min:0',
-            'category' => 'nullable|string|max:255',
+            'category_id' => 'required|integer|exists:categories,id',
             'image' => 'nullable|image|mimes:jpeg,png,jpg,gif,svg|max:2048', // Changed to file validation
         ]);
 
@@ -35,7 +37,7 @@ class ProductController extends Controller
         }
 
         $product = Product::create($validatedData);
-        return response()->json($product, 201);
+        return response()->json($product->load('category:id,name'), 201);
     }
 
     /**
@@ -43,7 +45,7 @@ class ProductController extends Controller
      */
     public function show(Product $product)
     {
-        return response()->json($product);
+        return response()->json($product->load('category:id,name'));
     }
 
     /**
@@ -55,7 +57,7 @@ class ProductController extends Controller
             'name' => 'required|string|max:255',
             'description' => 'nullable|string',
             'price' => 'required|numeric|min:0',
-            'category' => 'nullable|string|max:255',
+            'category_id' => 'required|integer|exists:categories,id',
             'image' => 'nullable|image|mimes:jpeg,png,jpg,gif,svg|max:2048', // Changed to file validation
         ]);
 
@@ -68,7 +70,7 @@ class ProductController extends Controller
         }
 
         $product->update($validatedData);
-        return response()->json($product);
+        return response()->json($product->load('category:id,name'));
     }
 
     /**

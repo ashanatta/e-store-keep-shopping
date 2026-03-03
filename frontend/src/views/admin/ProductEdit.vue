@@ -16,7 +16,15 @@
       </div>
       <div class="mb-3">
         <label for="category" class="form-label">Category</label>
-        <input type="text" class="form-control" id="category" v-model="product.category">
+        <select id="category" v-model="product.category_id" class="form-select" required>
+          <option value="" disabled>Select category</option>
+          <option v-for="c in categories" :key="c.id" :value="c.id">{{ c.name }}</option>
+        </select>
+        <div class="mt-2">
+          <router-link to="/admin/categories" class="text-decoration-none">
+            Manage categories
+          </router-link>
+        </div>
       </div>
       <div class="mb-3">
         <label for="image" class="form-label">Product Image</label>
@@ -36,16 +44,18 @@
 import { ref, onMounted } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import axios from 'axios'
+import { useCategories } from '@/composables/useCategories.js'
 
 const route = useRoute()
 const router = useRouter()
+const { categories, fetchCategories } = useCategories()
 
 const product = ref({
   id: null,
   name: '',
   description: '',
   price: 0,
-  category: '',
+  category_id: '',
   image: '' // This will store the image path from the backend
 })
 
@@ -58,8 +68,12 @@ const handleImageChange = (event) => {
 onMounted(async () => {
   product.value.id = route.params.id
   try {
+    await fetchCategories()
     const response = await axios.get(`/products/${product.value.id}`)
-    product.value = response.data
+    product.value = {
+      ...response.data,
+      category_id: response.data.category_id || response.data.category?.id || ''
+    }
   } catch (error) {
     console.error('Error fetching product:', error)
     alert('Failed to fetch product for editing.')
@@ -74,7 +88,7 @@ const handleSubmit = async () => {
     formData.append('name', product.value.name)
     formData.append('description', product.value.description)
     formData.append('price', product.value.price)
-    formData.append('category', product.value.category)
+    formData.append('category_id', product.value.category_id)
     if (imageFile.value) {
       formData.append('image', imageFile.value)
     }

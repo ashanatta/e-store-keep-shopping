@@ -7,7 +7,7 @@
       <nav class="sidebar-nav">
         <ul>
           <li><router-link to="/admin/products">Products</router-link></li>
-          <li><router-link to="/admin/products/create">Add New Product</router-link></li>
+          <li><router-link to="/admin/categories">Categories</router-link></li>
           <li><router-link to="/admin/orders">Orders</router-link></li>
           <li><router-link to="/admin/users">Users</router-link></li>
         </ul>
