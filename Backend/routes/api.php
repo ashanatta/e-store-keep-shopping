@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Controllers\Api\AuthController;
+use App\Http\Controllers\Api\CategoryController;
 use App\Http\Controllers\Api\UserController;
 use App\Http\Controllers\Api\ProductController;
 use Illuminate\Support\Facades\Route;
@@ -14,4 +15,5 @@ Route::post('/logout-all', [AuthController::class, 'logoutAll'])->middleware('au
 
 Route::middleware(['auth:sanctum', 'admin'])->group(function () {
     Route::apiResource('products', ProductController::class);
+    Route::apiResource('categories', CategoryController::class);
 });

@@ -22,7 +22,7 @@
             <td>{{ product.id }}</td>
             <td><img :src="`http://localhost:8000/storage/${product.image}`" alt="Product Image" style="width: 50px; height: 50px; object-fit: cover;"></td>
             <td>{{ product.name }}</td>
-            <td>{{ product.category }}</td>
+            <td>{{ product.category?.name || '-' }}</td>
             <td>${{ product.price.toFixed(2) }}</td>
             <td>
               <router-link :to="`/admin/products/${product.id}/edit`" class="btn btn-sm btn-info me-2">Edit</router-link>
