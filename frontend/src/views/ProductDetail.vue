@@ -28,7 +28,7 @@
           <div class="text-muted small">({{ product.reviews }} reviews)</div>
         </div>
         <div class="d-flex align-items-center gap-2 mb-4">
-          <span class="fs-4 fw-bold">${{ product.price.toFixed(2) }}</span>
+          <span class="fs-4 fw-bold">${{ currentPrice ? parseFloat(currentPrice).toFixed(2) : '0.00' }}</span>
           <span
             v-if="product.originalPrice"
             class="text-muted text-decoration-line-through"
@@ -40,34 +40,34 @@
           </span>
         </div>
 
-        <div class="mb-4">
+        <div class="mb-4" v-if="uniqueColors.length > 0">
           <div class="fw-semibold mb-2">Color: Select a color</div>
           <div class="d-flex flex-wrap gap-2">
             <button
-              v-for="color in product.colors"
-              :key="color"
+              v-for="color in uniqueColors"
+              :key="color.id"
               type="button"
               class="option-btn"
-              :class="{ active: selectedColor === color }"
-              @click="selectedColor = color"
+              :class="{ active: selectedColorId === color.id }"
+              @click="selectedColorId = color.id"
             >
-              {{ color }}
+              {{ color.name }}
             </button>
           </div>
         </div>
 
-        <div class="mb-4">
+        <div class="mb-4" v-if="availableSizes.length > 0">
           <div class="fw-semibold mb-2">Size: Select a size</div>
           <div class="d-flex flex-wrap gap-2">
             <button
-              v-for="size in product.sizes"
-              :key="size"
+              v-for="size in availableSizes"
+              :key="size.id"
               type="button"
               class="option-btn"
-              :class="{ active: selectedSize === size }"
-              @click="selectedSize = size"
+              :class="{ active: selectedSizeId === size.id }"
+              @click="selectedSizeId = size.id"
             >
-              {{ size }}
+              {{ size.name }}
             </button>
           </div>
         </div>
@@ -141,7 +141,7 @@
               <img :src="item.image" class="card-img-top" :alt="item.name" />
               <div class="card-body">
                 <div class="fw-semibold">{{ item.name }}</div>
-                <div class="text-muted small">${{ item.price.toFixed(2) }}</div>
+                <div class="text-muted small">${{ item.base_price ? parseFloat(item.base_price).toFixed(2) : '0.00' }}</div>
               </div>
             </div>
           </router-link>
@@ -152,189 +152,137 @@
 </template>
 
 <script setup>
-import { computed, ref, watch } from "vue"
+import { computed, ref, watch, onMounted } from "vue"
 import { useRoute } from "vue-router"
+import axios from "axios"
 
 const route = useRoute()
+const product = ref({
+  id: null,
+  name: '',
+  description: '',
+  base_price: 0,
+  images: [],
+  variants: [],
+  rating: 0,
+  reviews: 0,
+  reviewsSummary: [],
+  details: []
+})
+const loading = ref(true)
 
-const products = [
-  {
-    id: 1,
-    name: "Classic Oxford Shirt",
-    category: "Men",
-    type: "Shirts",
-    images: [
-      "https://images.unsplash.com/photo-1521572163474-6864f9cf17ab",
-      "https://images.unsplash.com/photo-1542272604-787c3835535d",
-      "https://images.unsplash.com/photo-1520975918318-7f2b6a29b6c3"
-    ],
-    image: "https://images.unsplash.com/photo-1521572163474-6864f9cf17ab",
-    price: 49.99,
-    originalPrice: 79.99,
-    rating: 4.5,
-    reviews: 127,
-    sizes: ["S", "M", "L", "XL", "XXL"],
-    colors: ["White", "Blue", "Light Gray"],
-    description:
-      "A timeless oxford shirt crafted from premium cotton. Perfect for both casual and formal occasions.",
-    details: [
-      "Category: Men",
-      "Available Sizes: S, M, L, XL, XXL",
-      "Available Colors: White, Blue, Light Gray",
-      "Material: Premium quality fabric",
-      "Care: Machine washable"
-    ],
-    reviewsSummary: [
-      {
-        name: "Ali Khan",
-        text: "Great fit and premium feel. Works perfectly with suits."
-      },
-      {
-        name: "Sara Ahmed",
-        text: "Fabric feels soft and breathable. Highly recommended."
-      }
-    ]
-  },
-  {
-    id: 2,
-    name: "Slim Fit Denim Jeans",
-    category: "Men",
-    type: "Jeans",
-    images: [
-      "https://images.unsplash.com/photo-1542272604-787c3835535d",
-      "https://images.unsplash.com/photo-1521572163474-6864f9cf17ab",
-      "https://images.unsplash.com/photo-1503342217505-b0a15ec3261c"
-    ],
-    image: "https://images.unsplash.com/photo-1542272604-787c3835535d",
-    price: 89.99,
-    originalPrice: null,
-    rating: 4.7,
-    reviews: 203,
-    sizes: ["30", "32", "34", "36"],
-    colors: ["Blue", "Navy"],
-    description:
-      "A refined slim-fit jean built for comfort and everyday wear with stretch denim.",
-    details: [
-      "Category: Men",
-      "Available Sizes: 30, 32, 34, 36",
-      "Available Colors: Blue, Navy",
-      "Material: Stretch denim",
-      "Care: Machine washable"
-    ],
-    reviewsSummary: [
-      {
-        name: "Imran Ali",
-        text: "Excellent quality and great fit."
-      },
-      {
-        name: "Hina Raza",
-        text: "Comfortable for all-day wear."
-      }
-    ]
-  },
-  {
-    id: 3,
-    name: "Leather Jacket",
-    category: "Men",
-    type: "Jackets",
-    images: [
-      "https://images.unsplash.com/photo-1520975918318-7f2b6a29b6c3",
-      "https://images.unsplash.com/photo-1512436991641-6745cdb1723f",
-      "https://images.unsplash.com/photo-1542291026-7eec264c27ff"
-    ],
-    image: "https://images.unsplash.com/photo-1520975918318-7f2b6a29b6c3",
-    price: 299.99,
-    originalPrice: 359.99,
-    rating: 4.6,
-    reviews: 89,
-    sizes: ["M", "L", "XL"],
-    colors: ["Black"],
-    description:
-      "A premium leather jacket with timeless styling and a tailored silhouette.",
-    details: [
-      "Category: Men",
-      "Available Sizes: M, L, XL",
-      "Available Colors: Black",
-      "Material: Genuine leather",
-      "Care: Dry clean only"
-    ],
-    reviewsSummary: [
-      {
-        name: "Omar Qureshi",
-        text: "Looks amazing and fits perfectly."
-      },
-      {
-        name: "Fatima Noor",
-        text: "Best leather jacket I have bought."
-      }
-    ]
-  },
-  {
-    id: 4,
-    name: "Performance Polo",
-    category: "Men",
-    type: "Shirts",
-    images: [
-      "https://images.unsplash.com/photo-1521572163474-6864f9cf17ab",
-      "https://images.unsplash.com/photo-1512436991641-6745cdb1723f",
-      "https://images.unsplash.com/photo-1503342217505-b0a15ec3261c"
-    ],
-    image: "https://images.unsplash.com/photo-1521572163474-6864f9cf17ab",
-    price: 39.99,
-    originalPrice: null,
-    rating: 4.4,
-    reviews: 156,
-    sizes: ["S", "M", "L", "XL"],
-    colors: ["Green", "Red"],
-    description:
-      "Breathable performance polo designed for everyday comfort and smart style.",
-    details: [
-      "Category: Men",
-      "Available Sizes: S, M, L, XL",
-      "Available Colors: Green, Red",
-      "Material: Performance knit",
-      "Care: Machine washable"
-    ],
-    reviewsSummary: [
-      {
-        name: "Umar Farooq",
-        text: "Comfortable and looks great."
-      },
-      {
-        name: "Anum Tariq",
-        text: "Nice colors and soft fabric."
-      }
-    ]
-  }
-]
-
-const productId = computed(() => Number(route.params.id))
-const product = computed(() => products.find((item) => item.id === productId.value) || products[0])
-
-const selectedImage = ref(product.value.image)
-const selectedColor = ref(product.value.colors[0])
-const selectedSize = ref(product.value.sizes[0])
+const selectedImage = ref('')
+const selectedColorId = ref(null)
+const selectedSizeId = ref(null)
 const quantity = ref(1)
 const activeTab = ref("description")
 
-watch(product, (value) => {
-  selectedImage.value = value.image
-  selectedColor.value = value.colors[0]
-  selectedSize.value = value.sizes[0]
-  quantity.value = 1
-  activeTab.value = "description"
+const fetchProduct = async () => {
+  try {
+    const response = await axios.get(`/products/${route.params.id}`)
+    const data = response.data
+    
+    // Transform data to match component structure
+    product.value = {
+      ...data,
+      // Ensure variants is an array
+      variants: data.variants || [],
+      // Mock data for missing fields
+      images: data.image ? [`http://localhost:8000/storage/${data.image}`] : [],
+      rating: 4.5,
+      reviews: 12,
+      reviewsSummary: [],
+      details: [
+        `Category: ${data.category?.name || 'Uncategorized'}`,
+        `Base Price: $${data.base_price}`
+      ]
+    }
+    
+    if (product.value.images.length > 0) {
+      selectedImage.value = product.value.images[0]
+    }
+
+    // Select first available color
+    if (uniqueColors.value.length > 0) {
+      selectedColorId.value = uniqueColors.value[0].id
+    }
+  } catch (error) {
+    console.error("Error fetching product:", error)
+  } finally {
+    loading.value = false
+  }
+}
+
+onMounted(fetchProduct)
+
+// Get unique colors from variants
+const uniqueColors = computed(() => {
+  if (!product.value.variants) return []
+  const colors = new Map()
+  product.value.variants.forEach(v => {
+    if (v.color && !colors.has(v.color.id)) {
+      colors.set(v.color.id, v.color)
+    }
+  })
+  return Array.from(colors.values())
 })
 
-const relatedProducts = computed(() =>
-  products.filter((item) => item.id !== product.value.id).slice(0, 3)
-)
+// Get available sizes for selected color
+const availableSizes = computed(() => {
+  if (!selectedColorId.value || !product.value.variants) return []
+  
+  return product.value.variants
+    .filter(v => v.color_id === selectedColorId.value && v.size)
+    .map(v => v.size)
+    // Remove duplicates
+    .filter((size, index, self) => 
+      index === self.findIndex(s => s.id === size.id)
+    )
+})
+
+// Watch for color change to reset size if not available
+watch(selectedColorId, (newColorId) => {
+  if (!newColorId) return
+  
+  // Check if current selected size is available for new color
+  const sizeAvailable = product.value.variants.some(v => 
+    v.color_id === newColorId && 
+    v.size_id === selectedSizeId.value
+  )
+  
+  if (!sizeAvailable) {
+    // Select first available size for this color
+    const firstVariant = product.value.variants.find(v => v.color_id === newColorId)
+    if (firstVariant) {
+      selectedSizeId.value = firstVariant.size_id
+    } else {
+      selectedSizeId.value = null
+    }
+  }
+})
+
+// Calculate current price based on selection
+const currentPrice = computed(() => {
+  if (selectedColorId.value && selectedSizeId.value) {
+    const variant = product.value.variants.find(v => 
+      v.color_id === selectedColorId.value && 
+      v.size_id === selectedSizeId.value
+    )
+    if (variant && variant.price) {
+      return variant.price
+    }
+  }
+  return product.value.base_price
+})
+
+const relatedProducts = computed(() => []) // TODO: Implement related products
 
 const discountLabel = computed(() => {
   if (!product.value.originalPrice) {
     return ""
   }
   const percent = Math.round(
-    ((product.value.originalPrice - product.value.price) / product.value.originalPrice) * 100
+    ((product.value.originalPrice - currentPrice.value) / product.value.originalPrice) * 100
   )
   return `${percent}% OFF`
 })

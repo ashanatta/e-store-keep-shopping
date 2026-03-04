@@ -13,7 +13,7 @@
           <div class="text-muted small">{{ item.size }} • {{ item.color }}</div>
           <div class="text-muted small">Qty: {{ item.quantity }}</div>
         </div>
-        <div class="fw-semibold">${{ item.price.toFixed(2) }}</div>
+        <div class="fw-semibold">${{ item.base_price ? parseFloat(item.base_price).toFixed(2) : '0.00' }}</div>
       </div>
     </div>
 
@@ -53,7 +53,7 @@ const props = defineProps({
 })
 
 const subtotal = computed(() =>
-  props.items.reduce((sum, item) => sum + item.price * item.quantity, 0)
+  props.items.reduce((sum, item) => sum + (item.base_price || 0) * item.quantity, 0)
 )
 const tax = computed(() => subtotal.value * 0.08)
 const total = computed(() => subtotal.value + tax.value)

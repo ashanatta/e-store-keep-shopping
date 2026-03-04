@@ -11,8 +11,8 @@
         <textarea class="form-control" id="description" v-model="product.description" rows="3"></textarea>
       </div>
       <div class="mb-3">
-        <label for="price" class="form-label">Price</label>
-        <input type="number" class="form-control" id="price" v-model="product.price" required min="0" step="0.01">
+        <label for="price" class="form-label">Base Price</label>
+        <input type="number" class="form-control" id="price" v-model="product.base_price" required min="0" step="0.01">
       </div>
       <div class="mb-3">
         <label for="category" class="form-label">Category</label>
@@ -34,6 +34,65 @@
           <img :src="`http://localhost:8000/storage/${product.image}`" alt="Current Product Image" style="width: 100px; height: 100px; object-fit: cover;">
         </div>
       </div>
+
+      <!-- Variants Section -->
+      <div class="mb-4">
+        <h4>Product Variants</h4>
+        <div class="card p-3 mb-3">
+          <div class="row g-2 align-items-end">
+            <div class="col-md-3">
+              <label class="form-label small">Color</label>
+              <select v-model="newVariant.color_id" class="form-select form-select-sm">
+                <option value="" disabled>Select Color</option>
+                <option v-for="color in colors" :key="color.id" :value="color.id">{{ color.name }}</option>
+              </select>
+            </div>
+            <div class="col-md-3">
+              <label class="form-label small">Size</label>
+              <select v-model="newVariant.size_id" class="form-select form-select-sm">
+                <option value="" disabled>Select Size</option>
+                <option v-for="size in sizes" :key="size.id" :value="size.id">{{ size.name }}</option>
+              </select>
+            </div>
+            <div class="col-md-2">
+              <label class="form-label small">Stock</label>
+              <input type="number" v-model="newVariant.stock" class="form-control form-control-sm" min="0">
+            </div>
+            <div class="col-md-2">
+              <label class="form-label small">Price (Optional)</label>
+              <input type="number" v-model="newVariant.price" class="form-control form-control-sm" min="0" step="0.01" placeholder="Override">
+            </div>
+            <div class="col-md-2">
+              <button type="button" class="btn btn-sm btn-success w-100" @click="addVariant">Add</button>
+            </div>
+          </div>
+        </div>
+
+        <!-- Variants List -->
+        <table class="table table-bordered table-sm" v-if="variants.length > 0">
+          <thead>
+            <tr>
+              <th>Color</th>
+              <th>Size</th>
+              <th>Stock</th>
+              <th>Price</th>
+              <th>Action</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr v-for="(variant, index) in variants" :key="index">
+              <td>{{ getColorName(variant.color_id) }}</td>
+              <td>{{ getSizeName(variant.size_id) }}</td>
+              <td>{{ variant.stock }}</td>
+              <td>{{ variant.price ? '$' + variant.price : 'Base Price' }}</td>
+              <td>
+                <button type="button" class="btn btn-sm btn-danger" @click="removeVariant(index)">Remove</button>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
       <button type="submit" class="btn btn-primary">Update Product</button>
       <router-link to="/admin/products" class="btn btn-secondary ms-2">Cancel</router-link>
     </form>
@@ -50,11 +109,21 @@ const route = useRoute()
 const router = useRouter()
 const { categories, fetchCategories } = useCategories()
 
+const colors = ref([])
+const sizes = ref([])
+const variants = ref([])
+const newVariant = ref({
+  color_id: '',
+  size_id: '',
+  stock: 0,
+  price: ''
+})
+
 const product = ref({
   id: null,
   name: '',
   description: '',
-  price: 0,
+  base_price: 0,
   category_id: '',
   image: '' // This will store the image path from the backend
 })
@@ -65,14 +134,72 @@ const handleImageChange = (event) => {
   imageFile.value = event.target.files[0]
 }
 
+const fetchColorsAndSizes = async () => {
+  try {
+    const [colorsRes, sizesRes] = await Promise.all([
+      axios.get('/colors'),
+      axios.get('/sizes')
+    ])
+    colors.value = colorsRes.data
+    sizes.value = sizesRes.data
+  } catch (error) {
+    console.error('Error fetching attributes:', error)
+  }
+}
+
+const addVariant = () => {
+  if (!newVariant.value.color_id && !newVariant.value.size_id) {
+    alert('Please select at least a color or a size')
+    return
+  }
+  
+  // Check if variant already exists
+  const exists = variants.value.some(v => 
+    v.color_id === newVariant.value.color_id && 
+    v.size_id === newVariant.value.size_id
+  )
+  
+  if (exists) {
+    alert('This variant already exists')
+    return
+  }
+
+  variants.value.push({ ...newVariant.value })
+  
+  // Reset new variant form
+  newVariant.value = {
+    color_id: '',
+    size_id: '',
+    stock: 0,
+    price: ''
+  }
+}
+
+const removeVariant = (index) => {
+  variants.value.splice(index, 1)
+}
+
+const getColorName = (id) => colors.value.find(c => c.id === id)?.name || '-'
+const getSizeName = (id) => sizes.value.find(s => s.id === id)?.name || '-'
+
 onMounted(async () => {
   product.value.id = route.params.id
   try {
     await fetchCategories()
+    await fetchColorsAndSizes()
     const response = await axios.get(`/products/${product.value.id}`)
     product.value = {
       ...response.data,
       category_id: response.data.category_id || response.data.category?.id || ''
+    }
+    // Map variants from backend
+    if (response.data.variants) {
+      variants.value = response.data.variants.map(v => ({
+        color_id: v.color_id,
+        size_id: v.size_id,
+        stock: v.stock,
+        price: v.price
+      }))
     }
   } catch (error) {
     console.error('Error fetching product:', error)
@@ -87,11 +214,14 @@ const handleSubmit = async () => {
     formData.append('_method', 'PUT') // Laravel expects _method for PUT requests with FormData
     formData.append('name', product.value.name)
     formData.append('description', product.value.description)
-    formData.append('price', product.value.price)
+    formData.append('base_price', product.value.base_price)
     formData.append('category_id', product.value.category_id)
     if (imageFile.value) {
       formData.append('image', imageFile.value)
     }
+    
+    // Append variants as JSON string
+    formData.append('variants', JSON.stringify(variants.value))
 
     await axios.post(`/products/${product.value.id}`, formData, {
       headers: {
