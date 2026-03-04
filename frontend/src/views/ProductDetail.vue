@@ -40,32 +40,32 @@
           </span>
         </div>
 
-        <div class="mb-4" v-if="uniqueColors.length > 0">
+        <div class="mb-4" v-if="displayColors.length > 0">
           <div class="fw-semibold mb-2">Color: Select a color</div>
           <div class="d-flex flex-wrap gap-2">
             <button
-              v-for="color in uniqueColors"
+              v-for="color in displayColors"
               :key="color.id"
               type="button"
               class="option-btn"
-              :class="{ active: selectedColorId === color.id }"
-              @click="selectedColorId = color.id"
+              :class="{ active: toId(selectedColorId) === toId(color.id) }"
+              @click="selectedColorId = toId(color.id)"
             >
               {{ color.name }}
             </button>
           </div>
         </div>
 
-        <div class="mb-4" v-if="availableSizes.length > 0">
+        <div class="mb-4" v-if="displaySizes.length > 0">
           <div class="fw-semibold mb-2">Size: Select a size</div>
           <div class="d-flex flex-wrap gap-2">
             <button
-              v-for="size in availableSizes"
+              v-for="size in displaySizes"
               :key="size.id"
               type="button"
               class="option-btn"
-              :class="{ active: selectedSizeId === size.id }"
-              @click="selectedSizeId = size.id"
+              :class="{ active: toId(selectedSizeId) === toId(size.id) }"
+              @click="selectedSizeId = toId(size.id)"
             >
               {{ size.name }}
             </button>
@@ -176,17 +176,43 @@ const selectedColorId = ref(null)
 const selectedSizeId = ref(null)
 const quantity = ref(1)
 const activeTab = ref("description")
+const fallbackColors = ref([])
+const fallbackSizes = ref([])
+
+const toId = (value) => {
+  if (value === null || value === undefined || value === '') {
+    return null
+  }
+  const parsed = Number(value)
+  return Number.isNaN(parsed) ? value : parsed
+}
 
 const fetchProduct = async () => {
   try {
-    const response = await axios.get(`/products/${route.params.id}`)
-    const data = response.data
+    const [productRes, colorsRes, sizesRes] = await Promise.all([
+      axios.get(`/products/${route.params.id}`),
+      axios.get('/colors').catch(() => ({ data: [] })),
+      axios.get('/sizes').catch(() => ({ data: [] })),
+    ])
+    const data = productRes.data
+    fallbackColors.value = (colorsRes.data || []).map((color) => ({
+      ...color,
+      id: toId(color.id),
+    }))
+    fallbackSizes.value = (sizesRes.data || []).map((size) => ({
+      ...size,
+      id: toId(size.id),
+    }))
     
     // Transform data to match component structure
     product.value = {
       ...data,
       // Ensure variants is an array
-      variants: data.variants || [],
+      variants: (data.variants || []).map((variant) => ({
+        ...variant,
+        color_id: toId(variant.color_id),
+        size_id: toId(variant.size_id),
+      })),
       // Mock data for missing fields
       images: data.image ? [`http://localhost:8000/storage/${data.image}`] : [],
       rating: 4.5,
@@ -203,8 +229,12 @@ const fetchProduct = async () => {
     }
 
     // Select first available color
-    if (uniqueColors.value.length > 0) {
-      selectedColorId.value = uniqueColors.value[0].id
+    if (displayColors.value.length > 0) {
+      selectedColorId.value = toId(displayColors.value[0].id)
+    }
+
+    if (displaySizes.value.length > 0) {
+      selectedSizeId.value = toId(displaySizes.value[0].id)
     }
   } catch (error) {
     console.error("Error fetching product:", error)
@@ -220,39 +250,71 @@ const uniqueColors = computed(() => {
   if (!product.value.variants) return []
   const colors = new Map()
   product.value.variants.forEach(v => {
-    if (v.color && !colors.has(v.color.id)) {
-      colors.set(v.color.id, v.color)
+    const colorId = toId(v.color?.id ?? v.color_id)
+    if (v.color && colorId !== null && !colors.has(colorId)) {
+      colors.set(colorId, { ...v.color, id: colorId })
     }
   })
   return Array.from(colors.values())
 })
 
+const displayColors = computed(() => {
+  if (uniqueColors.value.length > 0) {
+    return uniqueColors.value
+  }
+  return fallbackColors.value
+})
+
 // Get available sizes for selected color
 const availableSizes = computed(() => {
-  if (!selectedColorId.value || !product.value.variants) return []
-  
+  if (!product.value.variants) return []
+
+  const hasColorSelection = selectedColorId.value !== null
   return product.value.variants
-    .filter(v => v.color_id === selectedColorId.value && v.size)
+    .filter(v => {
+      if (!v.size) return false
+      if (!hasColorSelection) return true
+      return toId(v.color_id) === toId(selectedColorId.value)
+    })
     .map(v => v.size)
     // Remove duplicates
     .filter((size, index, self) => 
-      index === self.findIndex(s => s.id === size.id)
+      index === self.findIndex(s => toId(s.id) === toId(size.id))
     )
+})
+
+const displaySizes = computed(() => {
+  if (availableSizes.value.length > 0) {
+    return availableSizes.value
+  }
+  return fallbackSizes.value
 })
 
 // Watch for color change to reset size if not available
 watch(selectedColorId, (newColorId) => {
-  if (!newColorId) return
+  if (!product.value.variants?.length) {
+    if (displaySizes.value.length > 0) {
+      selectedSizeId.value = toId(displaySizes.value[0].id)
+    }
+    return
+  }
+
+  if (newColorId === null) {
+    if (availableSizes.value.length > 0) {
+      selectedSizeId.value = toId(availableSizes.value[0].id)
+    }
+    return
+  }
   
   // Check if current selected size is available for new color
   const sizeAvailable = product.value.variants.some(v => 
-    v.color_id === newColorId && 
-    v.size_id === selectedSizeId.value
+    toId(v.color_id) === toId(newColorId) &&
+    toId(v.size_id) === toId(selectedSizeId.value)
   )
   
   if (!sizeAvailable) {
     // Select first available size for this color
-    const firstVariant = product.value.variants.find(v => v.color_id === newColorId)
+    const firstVariant = product.value.variants.find(v => toId(v.color_id) === toId(newColorId) && v.size)
     if (firstVariant) {
       selectedSizeId.value = firstVariant.size_id
     } else {
@@ -263,10 +325,10 @@ watch(selectedColorId, (newColorId) => {
 
 // Calculate current price based on selection
 const currentPrice = computed(() => {
-  if (selectedColorId.value && selectedSizeId.value) {
+  if (selectedColorId.value !== null && selectedSizeId.value !== null) {
     const variant = product.value.variants.find(v => 
-      v.color_id === selectedColorId.value && 
-      v.size_id === selectedSizeId.value
+      toId(v.color_id) === toId(selectedColorId.value) &&
+      toId(v.size_id) === toId(selectedSizeId.value)
     )
     if (variant && variant.price) {
       return variant.price
@@ -296,6 +358,13 @@ const decreaseQty = () => {
 const increaseQty = () => {
   quantity.value += 1
 }
+
+watch(() => route.params.id, () => {
+  selectedColorId.value = null
+  selectedSizeId.value = null
+  quantity.value = 1
+  fetchProduct()
+})
 </script>
 
 <style scoped>
