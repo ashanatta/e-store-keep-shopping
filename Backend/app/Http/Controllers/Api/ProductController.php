@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Api;
 use App\Http\Controllers\Controller;
 use App\Models\Product;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Storage;
 
 class ProductController extends Controller
@@ -15,7 +16,7 @@ class ProductController extends Controller
     public function index()
     {
         return response()->json(
-            Product::with('category:id,name', 'variants.color', 'variants.size')->get()
+            Product::with('category:id,name', 'variants.color', 'variants.size', 'variants.images')->get()
         );
     }
 
@@ -31,6 +32,9 @@ class ProductController extends Controller
             'category_id' => 'required|integer|exists:categories,id',
             'image' => 'nullable|image|mimes:jpeg,png,jpg,gif,svg|max:2048', // Changed to file validation
             'variants' => 'nullable|json',
+            'variant_images' => 'nullable|array',
+            'variant_images.*' => 'nullable|array',
+            'variant_images.*.*' => 'nullable|image|mimes:jpeg,png,jpg,gif,svg|max:4096',
         ]);
         $variantsPayload = $validatedData['variants'] ?? null;
         unset($validatedData['variants']);
@@ -43,17 +47,12 @@ class ProductController extends Controller
 
         if ($variantsPayload) {
             $variants = json_decode($variantsPayload, true);
-            foreach ($variants as $variant) {
-                $product->variants()->create([
-                    'color_id' => $variant['color_id'] ?? null,
-                    'size_id' => $variant['size_id'] ?? null,
-                    'stock' => $variant['stock'] ?? 0,
-                    'price' => $variant['price'] ?? null,
-                ]);
+            if (is_array($variants)) {
+                $this->syncVariantsWithImages($request, $product, $variants);
             }
         }
 
-        return response()->json($product->load('category:id,name', 'variants.color', 'variants.size'), 201);
+        return response()->json($product->load('category:id,name', 'variants.color', 'variants.size', 'variants.images'), 201);
     }
 
     /**
@@ -61,7 +60,7 @@ class ProductController extends Controller
      */
     public function show(Product $product)
     {
-        return response()->json($product->load('category:id,name', 'variants.color', 'variants.size'));
+        return response()->json($product->load('category:id,name', 'variants.color', 'variants.size', 'variants.images'));
     }
 
     /**
@@ -76,6 +75,9 @@ class ProductController extends Controller
             'category_id' => 'required|integer|exists:categories,id',
             'image' => 'nullable|image|mimes:jpeg,png,jpg,gif,svg|max:2048', // Changed to file validation
             'variants' => 'nullable|json',
+            'variant_images' => 'nullable|array',
+            'variant_images.*' => 'nullable|array',
+            'variant_images.*.*' => 'nullable|image|mimes:jpeg,png,jpg,gif,svg|max:4096',
         ]);
         $variantsPayload = $validatedData['variants'] ?? null;
         unset($validatedData['variants']);
@@ -93,20 +95,21 @@ class ProductController extends Controller
         if ($variantsPayload) {
             // Sync variants: easiest way is to delete old and recreate new
             // A more complex approach would be to update existing ones by ID
+            $product->load('variants.images');
+            foreach ($product->variants as $oldVariant) {
+                foreach ($oldVariant->images as $image) {
+                    Storage::disk('public')->delete($image->path);
+                }
+            }
             $product->variants()->delete();
 
             $variants = json_decode($variantsPayload, true);
-            foreach ($variants as $variant) {
-                $product->variants()->create([
-                    'color_id' => $variant['color_id'] ?? null,
-                    'size_id' => $variant['size_id'] ?? null,
-                    'stock' => $variant['stock'] ?? 0,
-                    'price' => $variant['price'] ?? null,
-                ]);
+            if (is_array($variants)) {
+                $this->syncVariantsWithImages($request, $product, $variants);
             }
         }
 
-        return response()->json($product->load('category:id,name', 'variants.color', 'variants.size'));
+        return response()->json($product->load('category:id,name', 'variants.color', 'variants.size', 'variants.images'));
     }
 
     /**
@@ -114,10 +117,56 @@ class ProductController extends Controller
      */
     public function destroy(Product $product)
     {
+        $product->load('variants.images');
+        foreach ($product->variants as $variant) {
+            foreach ($variant->images as $image) {
+                Storage::disk('public')->delete($image->path);
+            }
+        }
+
         if ($product->image) {
             Storage::disk('public')->delete($product->image);
         }
-        $product->delete();
+
+        DB::transaction(function () use ($product) {
+            foreach ($product->variants as $variant) {
+                $variant->images()->delete();
+            }
+            $product->variants()->delete();
+            $product->delete();
+        });
+
         return response()->json(null, 204);
+    }
+
+    private function syncVariantsWithImages(Request $request, Product $product, array $variants): void
+    {
+        foreach ($variants as $index => $variantData) {
+            $variant = $product->variants()->create([
+                'color_id' => $variantData['color_id'] ?? null,
+                'size_id' => $variantData['size_id'] ?? null,
+                'stock' => $variantData['stock'] ?? 0,
+                'price' => $variantData['price'] ?? null,
+            ]);
+
+            $existingImagePaths = $variantData['existing_image_paths'] ?? [];
+            foreach ($existingImagePaths as $position => $path) {
+                if ($path) {
+                    $variant->images()->create([
+                        'path' => $path,
+                        'sort_order' => $position,
+                    ]);
+                }
+            }
+
+            $uploadedFiles = $request->file("variant_images.$index", []);
+            foreach ($uploadedFiles as $position => $imageFile) {
+                $storedPath = $imageFile->store('product-variants', 'public');
+                $variant->images()->create([
+                    'path' => $storedPath,
+                    'sort_order' => count($existingImagePaths) + $position,
+                ]);
+            }
+        }
     }
 }
