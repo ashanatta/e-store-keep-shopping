@@ -7,7 +7,7 @@
         </div>
         <div class="d-flex gap-3 thumbnails">
           <button
-            v-for="image in product.images"
+            v-for="image in displayImages"
             :key="image"
             type="button"
             class="thumb-btn"
@@ -212,6 +212,7 @@ const fetchProduct = async () => {
         ...variant,
         color_id: toId(variant.color_id),
         size_id: toId(variant.size_id),
+        image_urls: (variant.images || []).map((img) => `http://localhost:8000/storage/${img.path}`),
       })),
       // Mock data for missing fields
       images: data.image ? [`http://localhost:8000/storage/${data.image}`] : [],
@@ -224,17 +225,8 @@ const fetchProduct = async () => {
       ]
     }
     
-    if (product.value.images.length > 0) {
-      selectedImage.value = product.value.images[0]
-    }
-
-    // Select first available color
-    if (displayColors.value.length > 0) {
-      selectedColorId.value = toId(displayColors.value[0].id)
-    }
-
-    if (displaySizes.value.length > 0) {
-      selectedSizeId.value = toId(displaySizes.value[0].id)
+    if (displayImages.value.length > 0) {
+      selectedImage.value = displayImages.value[0]
     }
   } catch (error) {
     console.error("Error fetching product:", error)
@@ -290,19 +282,39 @@ const displaySizes = computed(() => {
   return fallbackSizes.value
 })
 
-// Watch for color change to reset size if not available
-watch(selectedColorId, (newColorId) => {
-  if (!product.value.variants?.length) {
-    if (displaySizes.value.length > 0) {
-      selectedSizeId.value = toId(displaySizes.value[0].id)
+const displayImages = computed(() => {
+  const fallbackProductImages = product.value.images || []
+  if (!product.value.variants?.length || selectedColorId.value === null) {
+    if (fallbackProductImages.length > 0) {
+      return fallbackProductImages
     }
-    return
+
+    const allVariantImageUrls = product.value.variants
+      .flatMap((variant) => variant.image_urls || [])
+    if (allVariantImageUrls.length > 0) {
+      return Array.from(new Set(allVariantImageUrls))
+    }
+
+    return fallbackProductImages
   }
 
+  const variantImageUrls = product.value.variants
+    .filter((variant) => toId(variant.color_id) === toId(selectedColorId.value))
+    .flatMap((variant) => variant.image_urls || [])
+
+  if (variantImageUrls.length > 0) {
+    return Array.from(new Set(variantImageUrls))
+  }
+
+  return fallbackProductImages
+})
+
+// Watch for color change to reset size if not available
+watch(selectedColorId, (newColorId) => {
+  if (!product.value.variants?.length) return
+
   if (newColorId === null) {
-    if (availableSizes.value.length > 0) {
-      selectedSizeId.value = toId(availableSizes.value[0].id)
-    }
+    selectedSizeId.value = null
     return
   }
   
@@ -320,6 +332,16 @@ watch(selectedColorId, (newColorId) => {
     } else {
       selectedSizeId.value = null
     }
+  }
+})
+
+watch(displayImages, (images) => {
+  if (!images?.length) {
+    selectedImage.value = ''
+    return
+  }
+  if (!images.includes(selectedImage.value)) {
+    selectedImage.value = images[0]
   }
 })
 

@@ -36,14 +36,14 @@
         <h4>Product Variants</h4>
         <div class="card p-3 mb-3">
           <div class="row g-2 align-items-end">
-            <div class="col-md-3">
+            <div class="col-md-2">
               <label class="form-label small">Color</label>
               <select v-model="newVariant.color_id" class="form-select form-select-sm">
                 <option value="" disabled>Select Color</option>
                 <option v-for="color in colors" :key="color.id" :value="color.id">{{ color.name }}</option>
               </select>
             </div>
-            <div class="col-md-3">
+            <div class="col-md-2">
               <label class="form-label small">Size</label>
               <select v-model="newVariant.size_id" class="form-select form-select-sm">
                 <option value="" disabled>Select Size</option>
@@ -59,6 +59,10 @@
               <input type="number" v-model="newVariant.price" class="form-control form-control-sm" min="0" step="0.01" placeholder="Override">
             </div>
             <div class="col-md-2">
+              <label class="form-label small">Variant Images</label>
+              <input type="file" class="form-control form-control-sm" accept="image/*" multiple @change="handleVariantImageChange">
+            </div>
+            <div class="col-md-2">
               <button type="button" class="btn btn-sm btn-success w-100" @click="addVariant">Add</button>
             </div>
           </div>
@@ -72,6 +76,7 @@
               <th>Size</th>
               <th>Stock</th>
               <th>Price</th>
+              <th>Images</th>
               <th>Action</th>
             </tr>
           </thead>
@@ -81,6 +86,7 @@
               <td>{{ getSizeName(variant.size_id) }}</td>
               <td>{{ variant.stock }}</td>
               <td>{{ variant.price ? '$' + variant.price : 'Base Price' }}</td>
+              <td>{{ variant.imageFiles?.length || 0 }} file(s)</td>
               <td>
                 <button type="button" class="btn btn-sm btn-danger" @click="removeVariant(index)">Remove</button>
               </td>
@@ -107,11 +113,12 @@ const { categories, fetchCategories } = useCategories()
 const colors = ref([])
 const sizes = ref([])
 const variants = ref([])
+const newVariantImages = ref([])
 const newVariant = ref({
   color_id: '',
   size_id: '',
   stock: 0,
-  price: ''
+  price: '',
 })
 
 const product = ref({
@@ -125,6 +132,10 @@ const imageFile = ref(null)
 
 const handleImageChange = (event) => {
   imageFile.value = event.target.files[0]
+}
+
+const handleVariantImageChange = (event) => {
+  newVariantImages.value = Array.from(event.target.files || [])
 }
 
 const fetchColorsAndSizes = async () => {
@@ -157,7 +168,11 @@ const addVariant = () => {
     return
   }
 
-  variants.value.push({ ...newVariant.value })
+  variants.value.push({
+    ...newVariant.value,
+    imageFiles: [...newVariantImages.value],
+    existing_image_paths: [],
+  })
   
   // Reset new variant form
   newVariant.value = {
@@ -166,6 +181,7 @@ const addVariant = () => {
     stock: 0,
     price: ''
   }
+  newVariantImages.value = []
 }
 
 const removeVariant = (index) => {
@@ -186,8 +202,20 @@ const handleSubmit = async () => {
       formData.append('image', imageFile.value)
     }
     
-    // Append variants as JSON string
-    formData.append('variants', JSON.stringify(variants.value))
+    const variantsPayload = variants.value.map((variant) => ({
+      color_id: variant.color_id || null,
+      size_id: variant.size_id || null,
+      stock: variant.stock || 0,
+      price: variant.price === '' ? null : variant.price,
+      existing_image_paths: variant.existing_image_paths || [],
+    }))
+    formData.append('variants', JSON.stringify(variantsPayload))
+
+    variants.value.forEach((variant, index) => {
+      ;(variant.imageFiles || []).forEach((file) => {
+        formData.append(`variant_images[${index}][]`, file)
+      })
+    })
 
     await axios.post('/products', formData, {
       headers: {
