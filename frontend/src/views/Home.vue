@@ -55,6 +55,7 @@ import ShopbyCategory from "@/components/home/ShopbyCategory.vue";
 import FeaturedProduct from "@/components/home/FeaturedProduct.vue";
 import WinterSale from "@/components/home/WinterSale.vue";
 import RecommendationProducts from "@/components/home/RecommendationProducts.vue";
+import axios from "axios";
 
 export default {
   name: "Home",
@@ -65,77 +66,34 @@ export default {
     RecommendationProducts
   },
   methods: {
-  handleWishlist(id) {
-    console.log("Wishlist:", id);
-  }
-}
-,
+    handleWishlist(id) {
+      console.log("Wishlist:", id);
+    },
+    async fetchProducts() {
+      try {
+        const response = await axios.get('/products')
+        // Take first 8 products for featured section
+        this.products = response.data.slice(0, 8).map(p => ({
+          ...p,
+          image: p.image ? `http://localhost:8000/storage/${p.image}` : 'https://via.placeholder.com/300x400',
+          originalPrice: null,
+          rating: 4.5,
+          reviews: 10,
+          new: new Date(p.created_at) > new Date(Date.now() - 30 * 24 * 60 * 60 * 1000)
+        }))
+      } catch (error) {
+        console.error('Error fetching featured products:', error)
+      }
+    }
+  },
+  mounted() {
+    this.fetchProducts()
+  },
   data() {
     return {
-      products: [
-        {
-          id: 1,
-          name: "Men Casual Shirt",
-          image: "https://images.unsplash.com/photo-1521572163474-6864f9cf17ab",
-          price: 29.99,
-          originalPrice: 49.99,
-          rating: 4.5,
-          reviews: 120,
-          new: true,
-        },
-        {
-          id: 2,
-          name: "Women Summer Dress",
-          image: "https://images.unsplash.com/photo-1521572163474-6864f9cf17ab",
-          price: 39.99,
-          originalPrice: null,
-          rating: 4.2,
-          reviews: 90,
-          new: false,
-        },
-         {
-          id: 2,
-          name: "Women Summer Dress",
-          image: "https://images.unsplash.com/photo-1521572163474-6864f9cf17ab",
-          price: 39.99,
-          originalPrice: null,
-          rating: 4.2,
-          reviews: 90,
-          new: false,
-        },
-         {
-          id: 2,
-          name: "Women Summer Dress",
-          image: "https://images.unsplash.com/photo-1521572163474-6864f9cf17ab",
-          price: 39.99,
-          originalPrice: null,
-          rating: 4.2,
-          reviews: 90,
-          new: false,
-        },
-         {
-          id: 2,
-          name: "Women Summer Dress",
-          image: "https://images.unsplash.com/photo-1521572163474-6864f9cf17ab",
-          price: 39.99,
-          originalPrice: null,
-          rating: 4.2,
-          reviews: 90,
-          new: false,
-        },
-         {
-          id: 2,
-          name: "Women Summer Dress",
-          image: "https://images.unsplash.com/photo-1521572163474-6864f9cf17ab",
-          price: 39.99,
-          originalPrice: null,
-          rating: 4.2,
-          reviews: 90,
-          new: false,
-        },
-      ],
-    };
-  },
+      products: []
+    }
+  }
 };
 </script>
 

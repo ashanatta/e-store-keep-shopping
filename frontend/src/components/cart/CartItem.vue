@@ -14,7 +14,7 @@
       </div>
     </div>
     <div class="d-flex align-items-center gap-3">
-      <div class="fw-semibold">${{ item.price.toFixed(2) }}</div>
+      <div class="fw-semibold">${{ item.base_price ? parseFloat(item.base_price).toFixed(2) : '0.00' }}</div>
       <button type="button" class="remove-btn" @click="$emit('remove', item.id)">
         <i class="bi bi-trash3"></i>
       </button>

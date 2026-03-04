@@ -17,7 +17,7 @@
             <!-- Price Section -->
             <p class="card-text">
               <span class="fw-bold text-dark">
-                Rs. {{ product.price }}
+                Rs. {{ product.base_price }}
               </span>
 
               <span
@@ -57,66 +57,44 @@
 </template>
 
 <script>
+import axios from 'axios'
+
 export default {
   name: "RecommendationProducts",
 
   data() {
     return {
-      products: [
-        {
-          id: 1,
-          name: "Men Casual Shirt",
-          image:
-            "https://images.unsplash.com/photo-1521572163474-6864f9cf17ab",
-          price: 29.99,
-          originalPrice: 49.99,
-          rating: 4.5,
-          reviews: 120,
-          new: true,
-        },
-        {
-          id: 2,
-          name: "Women Summer Dress",
-          image:
-            "https://images.unsplash.com/photo-1521572163474-6864f9cf17ab",
-          price: 39.99,
-          originalPrice: null,
-          rating: 4.2,
-          reviews: 90,
-          new: false,
-        },
-        {
-          id: 3,
-          name: "Sports Sneakers",
-          image:
-            "https://images.unsplash.com/photo-1542291026-7eec264c27ff",
-          price: 59.99,
-          originalPrice: 79.99,
-          rating: 4.7,
-          reviews: 210,
-          new: true,
-        },
-        {
-          id: 4,
-          name: "Leather Handbag",
-          image:
-            "https://images.unsplash.com/photo-1584917865442-de89df76afd3",
-          price: 89.99,
-          originalPrice: null,
-          rating: 4.3,
-          reviews: 65,
-          new: false,
-        }
-      ]
-    };
-  },
-
-  methods: {
-    addToCart(product) {        
-      this.$emit("add-to-cart", product);
+      products: []
     }
+  },
+  
+  methods: {
+    async fetchRecommended() {
+      try {
+        const response = await axios.get('/products')
+        // Take random 4 products or specific ones
+        this.products = response.data.slice(0, 4).map(p => ({
+          ...p,
+          image: p.image ? `http://localhost:8000/storage/${p.image}` : 'https://via.placeholder.com/300x400',
+          originalPrice: null,
+          rating: 4.5,
+          reviews: 5,
+          new: false
+        }))
+      } catch (error) {
+        console.error('Error fetching recommendations:', error)
+      }
+    },
+    addToCart(product) {
+      // Basic add to cart logic, can be enhanced
+      console.log('Add to cart:', product)
+    }
+  },
+  
+  mounted() {
+    this.fetchRecommended()
   }
-};
+}
 </script>
 
 <style scoped>

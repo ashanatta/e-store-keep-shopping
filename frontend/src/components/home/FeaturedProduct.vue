@@ -37,7 +37,7 @@
         </div>
 
         <div>
-          <span class="fw-bold">${{ product.price.toFixed(2) }}</span>
+          <span class="fw-bold">${{ product.base_price ? parseFloat(product.base_price).toFixed(2) : '0.00' }}</span>
 
           <span
             v-if="product.originalPrice"

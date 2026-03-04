@@ -27,7 +27,7 @@ class ProductController extends Controller
         $validatedData = $request->validate([
             'name' => 'required|string|max:255',
             'description' => 'nullable|string',
-            'price' => 'required|numeric|min:0',
+            'base_price' => 'required|numeric|min:0',
             'category_id' => 'required|integer|exists:categories,id',
             'image' => 'nullable|image|mimes:jpeg,png,jpg,gif,svg|max:2048', // Changed to file validation
         ]);
@@ -45,7 +45,7 @@ class ProductController extends Controller
      */
     public function show(Product $product)
     {
-        return response()->json($product->load('category:id,name'));
+        return response()->json($product->load('category:id,name', 'variants.color', 'variants.size'));
     }
 
     /**
@@ -56,9 +56,10 @@ class ProductController extends Controller
         $validatedData = $request->validate([
             'name' => 'required|string|max:255',
             'description' => 'nullable|string',
-            'price' => 'required|numeric|min:0',
+            'base_price' => 'required|numeric|min:0',
             'category_id' => 'required|integer|exists:categories,id',
             'image' => 'nullable|image|mimes:jpeg,png,jpg,gif,svg|max:2048', // Changed to file validation
+            'variants' => 'nullable|json',
         ]);
 
         if ($request->hasFile('image')) {
@@ -70,7 +71,24 @@ class ProductController extends Controller
         }
 
         $product->update($validatedData);
-        return response()->json($product->load('category:id,name'));
+
+        if ($request->filled('variants')) {
+            // Sync variants: easiest way is to delete old and recreate new
+            // A more complex approach would be to update existing ones by ID
+            $product->variants()->delete();
+
+            $variants = json_decode($request->variants, true);
+            foreach ($variants as $variant) {
+                $product->variants()->create([
+                    'color_id' => $variant['color_id'] ?? null,
+                    'size_id' => $variant['size_id'] ?? null,
+                    'stock' => $variant['stock'] ?? 0,
+                    'price' => $variant['price'] ?? null,
+                ]);
+            }
+        }
+
+        return response()->json($product->load('category:id,name', 'variants.color', 'variants.size'));
     }
 
     /**

@@ -8,6 +8,8 @@
         <ul>
           <li><router-link to="/admin/products">Products</router-link></li>
           <li><router-link to="/admin/categories">Categories</router-link></li>
+          <li><router-link to="/admin/colors">Colors</router-link></li>
+          <li><router-link to="/admin/sizes">Sizes</router-link></li>
           <li><router-link to="/admin/orders">Orders</router-link></li>
           <li><router-link to="/admin/users">Users</router-link></li>
         </ul>

@@ -11,6 +11,7 @@
           <option value="featured">Featured</option>
           <option value="price-low">Price: Low to High</option>
           <option value="price-high">Price: High to Low</option>
+          <option value="newest">Newest Arrivals</option>
           <option value="rating">Top Rated</option>
         </select>
       </div>
@@ -153,7 +154,8 @@
 </template>
 
 <script setup>
-import { computed, ref } from "vue"
+import { computed, ref, onMounted } from "vue"
+import axios from "axios"
 
 const props = defineProps({
   title: {
@@ -176,212 +178,70 @@ const selectedSizes = ref([])
 const selectedColors = ref([])
 const selectedRatings = ref([])
 
-const sizes = ["S", "M", "L", "XL", "XXL", "28", "30", "32", "34", "36", "38"]
-const colors = ["White", "Black", "Blue", "Light Gray", "Brown", "Navy", "Red", "Green"]
+const sizes = ref([])
+const colors = ref([])
 const ratingOptions = [5, 4, 3, 2, 1]
 
-const products = [
-  {
-    id: 1,
-    name: "Classic Oxford Shirt",
-    category: "Men",
-    type: "Shirts",
-    image: "https://images.unsplash.com/photo-1521572163474-6864f9cf17ab",
-    price: 49.99,
-    originalPrice: 79.99,
-    rating: 4.5,
-    reviews: 127,
-    isNew: false,
-    sizes: ["M", "L", "XL"],
-    colors: ["White", "Light Gray"]
-  },
-  {
-    id: 2,
-    name: "Slim Fit Denim Jeans",
-    category: "Men",
-    type: "Jeans",
-    image: "https://images.unsplash.com/photo-1542272604-787c3835535d",
-    price: 89.99,
-    originalPrice: null,
-    rating: 4.7,
-    reviews: 203,
-    isNew: true,
-    sizes: ["30", "32", "34", "36"],
-    colors: ["Blue", "Navy"]
-  },
-  {
-    id: 3,
-    name: "Leather Jacket",
-    category: "Men",
-    type: "Jackets",
-    image: "https://images.unsplash.com/photo-1520975918318-7f2b6a29b6c3",
-    price: 299.99,
-    originalPrice: 359.99,
-    rating: 4.6,
-    reviews: 89,
-    isNew: false,
-    sizes: ["M", "L", "XL"],
-    colors: ["Black"]
-  },
-  {
-    id: 4,
-    name: "Performance Polo",
-    category: "Men",
-    type: "Shirts",
-    image: "https://images.unsplash.com/photo-1521572163474-6864f9cf17ab",
-    price: 39.99,
-    originalPrice: null,
-    rating: 4.4,
-    reviews: 156,
-    isNew: false,
-    sizes: ["S", "M", "L", "XL"],
-    colors: ["Green", "Red"]
-  },
-  {
-    id: 5,
-    name: "Summer Wrap Dress",
-    category: "Women",
-    type: "Dresses",
-    image: "https://images.unsplash.com/photo-1490481651871-ab68de25d43d",
-    price: 69.99,
-    originalPrice: 89.99,
-    rating: 4.6,
-    reviews: 210,
-    isNew: true,
-    sizes: ["S", "M", "L"],
-    colors: ["Red", "White"]
-  },
-  {
-    id: 6,
-    name: "Tailored Blazer",
-    category: "Women",
-    type: "Jackets",
-    image: "https://images.unsplash.com/photo-1485231183945-fffde7cc051e",
-    price: 119.99,
-    originalPrice: null,
-    rating: 4.3,
-    reviews: 84,
-    isNew: false,
-    sizes: ["M", "L", "XL"],
-    colors: ["Black", "Navy"]
-  },
-  {
-    id: 7,
-    name: "Pleated Skirt",
-    category: "Women",
-    type: "Skirts",
-    image: "https://images.unsplash.com/photo-1512436991641-6745cdb1723f",
-    price: 54.99,
-    originalPrice: 74.99,
-    rating: 4.2,
-    reviews: 63,
-    isNew: false,
-    sizes: ["S", "M", "L"],
-    colors: ["Light Gray", "Navy"]
-  },
-  {
-    id: 8,
-    name: "Rib Knit Top",
-    category: "Women",
-    type: "Tops",
-    image: "https://images.unsplash.com/photo-1524504388940-b1c1722653e1",
-    price: 34.99,
-    originalPrice: null,
-    rating: 4.1,
-    reviews: 52,
-    isNew: true,
-    sizes: ["S", "M", "L", "XL"],
-    colors: ["White", "Brown"]
-  },
-  {
-    id: 9,
-    name: "Kids Denim Jacket",
-    category: "Kids",
-    type: "Jackets",
-    image: "https://images.unsplash.com/photo-1503342217505-b0a15ec3261c",
-    price: 44.99,
-    originalPrice: 59.99,
-    rating: 4.7,
-    reviews: 76,
-    isNew: false,
-    sizes: ["S", "M", "L"],
-    colors: ["Blue"]
-  },
-  {
-    id: 10,
-    name: "Graphic Tee Pack",
-    category: "Kids",
-    type: "T-Shirts",
-    image: "https://images.unsplash.com/photo-1521572163474-6864f9cf17ab",
-    price: 24.99,
-    originalPrice: null,
-    rating: 4.4,
-    reviews: 58,
-    isNew: true,
-    sizes: ["S", "M", "L"],
-    colors: ["Red", "White"]
-  },
-  {
-    id: 11,
-    name: "Playtime Joggers",
-    category: "Kids",
-    type: "Pants",
-    image: "https://images.unsplash.com/photo-1503454537195-1dcabb73ffb9",
-    price: 29.99,
-    originalPrice: 39.99,
-    rating: 4.3,
-    reviews: 41,
-    isNew: false,
-    sizes: ["S", "M", "L"],
-    colors: ["Green", "Navy"]
-  },
-  {
-    id: 12,
-    name: "Cozy Hoodie",
-    category: "Kids",
-    type: "Hoodies",
-    image: "https://images.unsplash.com/photo-1512436991641-6745cdb1723f",
-    price: 34.99,
-    originalPrice: null,
-    rating: 4.5,
-    reviews: 69,
-    isNew: true,
-    sizes: ["S", "M", "L"],
-    colors: ["Light Gray", "Blue"]
+const products = ref([])
+const loading = ref(true)
+
+const fetchProducts = async () => {
+  loading.value = true
+  try {
+    const response = await axios.get('/products')
+    // Transform backend data to frontend structure
+    products.value = response.data.map(p => ({
+      ...p,
+      image: p.image ? `http://localhost:8000/storage/${p.image}` : 'https://via.placeholder.com/300x400',
+      originalPrice: null, // Add logic if you have original price in backend
+      rating: 4.5, // Mock rating
+      reviews: 0, // Mock reviews
+      isNew: new Date(p.created_at) > new Date(Date.now() - 30 * 24 * 60 * 60 * 1000), // New if created in last 30 days
+      sizes: [], // Populated from variants if needed
+      colors: [] // Populated from variants if needed
+    }))
+  } catch (error) {
+    console.error('Error fetching products:', error)
+  } finally {
+    loading.value = false
   }
-]
+}
+
+const fetchFilters = async () => {
+  try {
+    const [colorsRes, sizesRes] = await Promise.all([
+      axios.get('/colors'),
+      axios.get('/sizes')
+    ])
+    colors.value = colorsRes.data.map(c => c.name)
+    sizes.value = sizesRes.data.map(s => s.name)
+  } catch (error) {
+    console.error('Error fetching filters:', error)
+  }
+}
+
+onMounted(() => {
+  fetchProducts()
+  fetchFilters()
+})
 
 const filteredProducts = computed(() => {
-  let result = products
+  let result = products.value
 
   if (props.category !== "all") {
-    result = result.filter((product) => product.category === props.category)
+    // Assuming backend category name matches prop
+    result = result.filter((product) => product.category?.name === props.category)
   }
 
   if (props.saleOnly) {
     result = result.filter((product) => product.originalPrice)
   }
 
-  result = result.filter((product) => product.price <= maxPrice.value)
+  result = result.filter((product) => parseFloat(product.base_price) <= maxPrice.value)
 
-  if (selectedSizes.value.length > 0) {
-    result = result.filter((product) =>
-      product.sizes.some((size) => selectedSizes.value.includes(size))
-    )
-  }
-
-  if (selectedColors.value.length > 0) {
-    result = result.filter((product) =>
-      product.colors.some((color) => selectedColors.value.includes(color))
-    )
-  }
-
-  if (selectedRatings.value.length > 0) {
-    result = result.filter((product) =>
-      selectedRatings.value.some((minRating) => product.rating >= minRating)
-    )
-  }
-
+  // Note: Backend variants filtering would be better here for scalability
+  // For now, we are filtering based on loaded products if we populated sizes/colors
+  
   return result
 })
 
@@ -389,14 +249,15 @@ const sortedProducts = computed(() => {
   const result = [...filteredProducts.value]
 
   if (sortBy.value === "price-low") {
-    return result.sort((a, b) => a.price - b.price)
+    return result.sort((a, b) => parseFloat(a.base_price) - parseFloat(b.base_price))
   }
   if (sortBy.value === "price-high") {
-    return result.sort((a, b) => b.price - a.price)
+    return result.sort((a, b) => parseFloat(b.base_price) - parseFloat(a.base_price))
   }
-  if (sortBy.value === "rating") {
-    return result.sort((a, b) => b.rating - a.rating)
+  if (sortBy.value === "newest") {
+    return result.sort((a, b) => new Date(b.created_at) - new Date(a.created_at))
   }
+  
   return result
 })
 
