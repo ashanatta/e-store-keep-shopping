@@ -129,7 +129,7 @@
                     ⭐ {{ product.rating }} ({{ product.reviews }})
                   </div>
                   <div>
-                    <span class="fw-bold">${{ product.price.toFixed(2) }}</span>
+                    <span class="fw-bold">${{ product.base_price.toFixed(2) }}</span>
                     <span
                       v-if="product.originalPrice"
                       class="text-muted text-decoration-line-through ms-2"
@@ -192,14 +192,30 @@ const fetchProducts = async () => {
     // Transform backend data to frontend structure
     products.value = response.data.map(p => ({
       ...p,
+      base_price: Number(p.base_price || 0),
       image: p.image ? `http://localhost:8000/storage/${p.image}` : 'https://via.placeholder.com/300x400',
       originalPrice: null, // Add logic if you have original price in backend
       rating: 4.5, // Mock rating
       reviews: 0, // Mock reviews
       isNew: new Date(p.created_at) > new Date(Date.now() - 30 * 24 * 60 * 60 * 1000), // New if created in last 30 days
-      sizes: [], // Populated from variants if needed
-      colors: [] // Populated from variants if needed
+      sizes: (p.variants || [])
+        .map(v => v.size?.name)
+        .filter(Boolean),
+      colors: (p.variants || [])
+        .map(v => v.color?.name)
+        .filter(Boolean)
     }))
+
+    // Derive filter options from available product variants so
+    // shoppers only see relevant values for the current catalog.
+    const sizeSet = new Set()
+    const colorSet = new Set()
+    products.value.forEach((product) => {
+      product.sizes.forEach((size) => sizeSet.add(size))
+      product.colors.forEach((color) => colorSet.add(color))
+    })
+    sizes.value = Array.from(sizeSet)
+    colors.value = Array.from(colorSet)
   } catch (error) {
     console.error('Error fetching products:', error)
   } finally {
@@ -213,8 +229,12 @@ const fetchFilters = async () => {
       axios.get('/colors'),
       axios.get('/sizes')
     ])
-    colors.value = colorsRes.data.map(c => c.name)
-    sizes.value = sizesRes.data.map(s => s.name)
+    if (!colors.value.length) {
+      colors.value = colorsRes.data.map(c => c.name)
+    }
+    if (!sizes.value.length) {
+      sizes.value = sizesRes.data.map(s => s.name)
+    }
   } catch (error) {
     console.error('Error fetching filters:', error)
   }
@@ -229,15 +249,27 @@ const filteredProducts = computed(() => {
   let result = products.value
 
   if (props.category !== "all") {
-    // Assuming backend category name matches prop
-    result = result.filter((product) => product.category?.name === props.category)
+    const targetCategory = props.category.trim().toLowerCase()
+    result = result.filter((product) => product.category?.name?.trim()?.toLowerCase() === targetCategory)
   }
 
   if (props.saleOnly) {
     result = result.filter((product) => product.originalPrice)
   }
 
-  result = result.filter((product) => parseFloat(product.base_price) <= maxPrice.value)
+  result = result.filter((product) => product.base_price <= maxPrice.value)
+
+  if (selectedSizes.value.length > 0) {
+    result = result.filter((product) =>
+      product.sizes.some((size) => selectedSizes.value.includes(size))
+    )
+  }
+
+  if (selectedColors.value.length > 0) {
+    result = result.filter((product) =>
+      product.colors.some((color) => selectedColors.value.includes(color))
+    )
+  }
 
   // Note: Backend variants filtering would be better here for scalability
   // For now, we are filtering based on loaded products if we populated sizes/colors
@@ -249,10 +281,10 @@ const sortedProducts = computed(() => {
   const result = [...filteredProducts.value]
 
   if (sortBy.value === "price-low") {
-    return result.sort((a, b) => parseFloat(a.base_price) - parseFloat(b.base_price))
+    return result.sort((a, b) => a.base_price - b.base_price)
   }
   if (sortBy.value === "price-high") {
-    return result.sort((a, b) => parseFloat(b.base_price) - parseFloat(a.base_price))
+    return result.sort((a, b) => b.base_price - a.base_price)
   }
   if (sortBy.value === "newest") {
     return result.sort((a, b) => new Date(b.created_at) - new Date(a.created_at))

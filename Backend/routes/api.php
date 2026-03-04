@@ -15,9 +15,17 @@ Route::post('/login', [AuthController::class, 'login']);
 Route::post('/logout', [AuthController::class, 'logout'])->middleware('auth:sanctum');
 Route::post('/logout-all', [AuthController::class, 'logoutAll'])->middleware('auth:sanctum');
 
+// Public catalog endpoints
+Route::get('/products', [ProductController::class, 'index']);
+Route::get('/products/{product}', [ProductController::class, 'show']);
+Route::get('/categories', [CategoryController::class, 'index']);
+Route::get('/categories/{category}', [CategoryController::class, 'show']);
+Route::get('/colors', [ColorController::class, 'index']);
+Route::get('/sizes', [SizeController::class, 'index']);
+
 Route::middleware(['auth:sanctum', 'admin'])->group(function () {
-    Route::apiResource('products', ProductController::class);
-    Route::apiResource('categories', CategoryController::class);
-    Route::apiResource('colors', ColorController::class);
-    Route::apiResource('sizes', SizeController::class);
+    Route::apiResource('products', ProductController::class)->except(['index', 'show']);
+    Route::apiResource('categories', CategoryController::class)->except(['index', 'show']);
+    Route::apiResource('colors', ColorController::class)->except(['index', 'show']);
+    Route::apiResource('sizes', SizeController::class)->except(['index', 'show']);
 });

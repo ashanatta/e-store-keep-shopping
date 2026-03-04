@@ -15,7 +15,7 @@ class ProductController extends Controller
     public function index()
     {
         return response()->json(
-            Product::with('category:id,name')->get()
+            Product::with('category:id,name', 'variants.color', 'variants.size')->get()
         );
     }
 
@@ -30,14 +30,30 @@ class ProductController extends Controller
             'base_price' => 'required|numeric|min:0',
             'category_id' => 'required|integer|exists:categories,id',
             'image' => 'nullable|image|mimes:jpeg,png,jpg,gif,svg|max:2048', // Changed to file validation
+            'variants' => 'nullable|json',
         ]);
+        $variantsPayload = $validatedData['variants'] ?? null;
+        unset($validatedData['variants']);
 
         if ($request->hasFile('image')) {
             $validatedData['image'] = $request->file('image')->store('products', 'public');
         }
 
         $product = Product::create($validatedData);
-        return response()->json($product->load('category:id,name'), 201);
+
+        if ($variantsPayload) {
+            $variants = json_decode($variantsPayload, true);
+            foreach ($variants as $variant) {
+                $product->variants()->create([
+                    'color_id' => $variant['color_id'] ?? null,
+                    'size_id' => $variant['size_id'] ?? null,
+                    'stock' => $variant['stock'] ?? 0,
+                    'price' => $variant['price'] ?? null,
+                ]);
+            }
+        }
+
+        return response()->json($product->load('category:id,name', 'variants.color', 'variants.size'), 201);
     }
 
     /**
@@ -61,6 +77,8 @@ class ProductController extends Controller
             'image' => 'nullable|image|mimes:jpeg,png,jpg,gif,svg|max:2048', // Changed to file validation
             'variants' => 'nullable|json',
         ]);
+        $variantsPayload = $validatedData['variants'] ?? null;
+        unset($validatedData['variants']);
 
         if ($request->hasFile('image')) {
             // Delete old image if it exists
@@ -72,12 +90,12 @@ class ProductController extends Controller
 
         $product->update($validatedData);
 
-        if ($request->filled('variants')) {
+        if ($variantsPayload) {
             // Sync variants: easiest way is to delete old and recreate new
             // A more complex approach would be to update existing ones by ID
             $product->variants()->delete();
 
-            $variants = json_decode($request->variants, true);
+            $variants = json_decode($variantsPayload, true);
             foreach ($variants as $variant) {
                 $product->variants()->create([
                     'color_id' => $variant['color_id'] ?? null,
