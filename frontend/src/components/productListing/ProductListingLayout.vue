@@ -193,7 +193,7 @@ const fetchProducts = async () => {
     // Transform backend data to frontend structure
     products.value = response.data.map(p => ({
       ...p,
-      image: p.image ? `http://localhost:8000/storage/${p.image}` : 'https://via.placeholder.com/300x400',
+      image: p.image ? `http://localhost:8000/api/files/${p.image}` : 'https://via.placeholder.com/300x400',
       originalPrice: null, // Add logic if you have original price in backend
       rating: 4.5, // Mock rating
       reviews: 0, // Mock reviews

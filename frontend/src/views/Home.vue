@@ -75,7 +75,7 @@ export default {
         // Take first 8 products for featured section
         this.products = response.data.slice(0, 8).map(p => ({
           ...p,
-          image: p.image ? `http://localhost:8000/storage/${p.image}` : 'https://via.placeholder.com/300x400',
+          image: p.image ? `http://localhost:8000/api/files/${p.image}` : 'https://via.placeholder.com/300x400',
           displayPrice: (() => {
             const prices = (p.variants || [])
               .map(v => Number(v.price))

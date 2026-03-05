@@ -78,8 +78,9 @@
                 </ul>
               </div>
             </template>
-            <router-link to="/cart" class="icon-link">
+            <router-link to="/cart" class="icon-link cart-link">
               <i class="bi bi-cart icon"></i>
+              <span v-if="cartCount > 0" class="cart-badge">{{ cartCount }}</span>
             </router-link>
           </div>
 
@@ -91,10 +92,12 @@
 </template>
 
 <script setup>
-import { computed } from "vue"
+import { computed, onMounted, watch } from "vue"
 import { useAuth } from "@/composables/useAuth.js"
+import { useCart } from "@/composables/useCart.js"
 
 const { user, isAuthenticated, isAdmin, logout } = useAuth()
+const { count: cartCount, fetchCart } = useCart()
 
 const initial = computed(() => {
   const name = user.value?.name || ""
@@ -104,6 +107,16 @@ const initial = computed(() => {
 const handleLogout = async () => {
   await logout()
 }
+
+watch(isAuthenticated, async () => {
+  await fetchCart()
+}, { immediate: true })
+
+onMounted(async () => {
+  if (isAuthenticated.value) {
+    await fetchCart()
+  }
+})
 </script>
 
 <style scoped>
@@ -135,6 +148,25 @@ const handleLogout = async () => {
   align-items: center;
   color: inherit;
   text-decoration: none;
+}
+
+.cart-link {
+  position: relative;
+}
+
+.cart-badge {
+  position: absolute;
+  top: -8px;
+  right: -10px;
+  min-width: 18px;
+  height: 18px;
+  border-radius: 999px;
+  background: #dc3545;
+  color: #fff;
+  font-size: 11px;
+  line-height: 18px;
+  text-align: center;
+  padding: 0 5px;
 }
 
 .router-link-exact-active {

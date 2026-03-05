@@ -21,6 +21,9 @@ import ProductEdit from '@/views/admin/ProductEdit.vue'
 import CategoryList from '@/views/admin/CategoryList.vue'
 import ColorList from '@/views/admin/ColorList.vue'
 import SizeList from '@/views/admin/SizeList.vue'
+import ReviewList from '@/views/admin/ReviewList.vue'
+import WishlistList from '@/views/admin/WishlistList.vue'
+import CartList from '@/views/admin/CartList.vue'
 import { useAuth } from '@/composables/useAuth'
 
 // Define routes
@@ -49,6 +52,9 @@ const routes = [
       { path: 'categories', name: 'AdminCategories', component: CategoryList },
       { path: 'colors', name: 'AdminColors', component: ColorList },
       { path: 'sizes', name: 'AdminSizes', component: SizeList },
+      { path: 'reviews', name: 'AdminReviews', component: ReviewList },
+      { path: 'wishlists', name: 'AdminWishlists', component: WishlistList },
+      { path: 'carts', name: 'AdminCarts', component: CartList },
     ],
     meta: { requiresAuth: true, requiresAdmin: true } // Add meta fields for auth/admin checks
   }
