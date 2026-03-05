@@ -37,7 +37,8 @@
         </div>
 
         <div>
-          <span class="fw-bold">${{ product.base_price ? parseFloat(product.base_price).toFixed(2) : '0.00' }}</span>
+          <span v-if="product.displayPrice !== null" class="fw-bold">${{ product.displayPrice.toFixed(2) }}</span>
+          <span v-else class="fw-bold">Select options</span>
 
           <span
             v-if="product.originalPrice"

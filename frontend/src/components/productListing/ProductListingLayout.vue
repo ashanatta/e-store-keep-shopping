@@ -129,7 +129,8 @@
                     ⭐ {{ product.rating }} ({{ product.reviews }})
                   </div>
                   <div>
-                    <span class="fw-bold">${{ product.base_price.toFixed(2) }}</span>
+                    <span v-if="product.displayPrice !== null" class="fw-bold">${{ product.displayPrice.toFixed(2) }}</span>
+                    <span v-else class="fw-bold">Select options</span>
                     <span
                       v-if="product.originalPrice"
                       class="text-muted text-decoration-line-through ms-2"
@@ -192,12 +193,17 @@ const fetchProducts = async () => {
     // Transform backend data to frontend structure
     products.value = response.data.map(p => ({
       ...p,
-      base_price: Number(p.base_price || 0),
       image: p.image ? `http://localhost:8000/storage/${p.image}` : 'https://via.placeholder.com/300x400',
       originalPrice: null, // Add logic if you have original price in backend
       rating: 4.5, // Mock rating
       reviews: 0, // Mock reviews
       isNew: new Date(p.created_at) > new Date(Date.now() - 30 * 24 * 60 * 60 * 1000), // New if created in last 30 days
+      displayPrice: (() => {
+        const prices = (p.variants || [])
+          .map(v => Number(v.price))
+          .filter(price => Number.isFinite(price) && price > 0)
+        return prices.length ? Math.min(...prices) : null
+      })(),
       sizes: (p.variants || [])
         .map(v => v.size?.name)
         .filter(Boolean),
@@ -257,7 +263,7 @@ const filteredProducts = computed(() => {
     result = result.filter((product) => product.originalPrice)
   }
 
-  result = result.filter((product) => product.base_price <= maxPrice.value)
+  result = result.filter((product) => product.displayPrice !== null && product.displayPrice <= maxPrice.value)
 
   if (selectedSizes.value.length > 0) {
     result = result.filter((product) =>
@@ -281,10 +287,10 @@ const sortedProducts = computed(() => {
   const result = [...filteredProducts.value]
 
   if (sortBy.value === "price-low") {
-    return result.sort((a, b) => a.base_price - b.base_price)
+    return result.sort((a, b) => a.displayPrice - b.displayPrice)
   }
   if (sortBy.value === "price-high") {
-    return result.sort((a, b) => b.base_price - a.base_price)
+    return result.sort((a, b) => b.displayPrice - a.displayPrice)
   }
   if (sortBy.value === "newest") {
     return result.sort((a, b) => new Date(b.created_at) - new Date(a.created_at))

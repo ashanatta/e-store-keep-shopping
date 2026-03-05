@@ -11,10 +11,6 @@
         <textarea class="form-control" id="description" v-model="product.description" rows="3"></textarea>
       </div>
       <div class="mb-3">
-        <label for="price" class="form-label">Base Price</label>
-        <input type="number" class="form-control" id="price" v-model="product.base_price" required min="0" step="0.01">
-      </div>
-      <div class="mb-3">
         <label for="category" class="form-label">Category</label>
         <select id="category" v-model="product.category_id" class="form-select" required>
           <option value="" disabled>Select category</option>
@@ -55,8 +51,8 @@
               <input type="number" v-model="newVariant.stock" class="form-control form-control-sm" min="0">
             </div>
             <div class="col-md-2">
-              <label class="form-label small">Price (Optional)</label>
-              <input type="number" v-model="newVariant.price" class="form-control form-control-sm" min="0" step="0.01" placeholder="Override">
+              <label class="form-label small">Price</label>
+              <input type="number" v-model="newVariant.price" class="form-control form-control-sm" min="0.01" step="0.01" placeholder="Required">
             </div>
             <div class="col-md-2">
               <label class="form-label small">Variant Images</label>
@@ -85,7 +81,7 @@
               <td>{{ getColorName(variant.color_id) }}</td>
               <td>{{ getSizeName(variant.size_id) }}</td>
               <td>{{ variant.stock }}</td>
-              <td>{{ variant.price ? '$' + variant.price : 'Base Price' }}</td>
+              <td>${{ Number(variant.price).toFixed(2) }}</td>
               <td>{{ variant.imageFiles?.length || 0 }} file(s)</td>
               <td>
                 <button type="button" class="btn btn-sm btn-danger" @click="removeVariant(index)">Remove</button>
@@ -124,7 +120,6 @@ const newVariant = ref({
 const product = ref({
   name: '',
   description: '',
-  base_price: 0,
   category_id: '',
 })
 
@@ -168,6 +163,11 @@ const addVariant = () => {
     return
   }
 
+  if (!newVariant.value.price || Number(newVariant.value.price) <= 0) {
+    alert('Please add a valid variant price')
+    return
+  }
+
   variants.value.push({
     ...newVariant.value,
     imageFiles: [...newVariantImages.value],
@@ -196,7 +196,6 @@ const handleSubmit = async () => {
     const formData = new FormData()
     formData.append('name', product.value.name)
     formData.append('description', product.value.description)
-    formData.append('base_price', product.value.base_price)
     formData.append('category_id', product.value.category_id)
     if (imageFile.value) {
       formData.append('image', imageFile.value)
@@ -206,7 +205,7 @@ const handleSubmit = async () => {
       color_id: variant.color_id || null,
       size_id: variant.size_id || null,
       stock: variant.stock || 0,
-      price: variant.price === '' ? null : variant.price,
+      price: variant.price,
       existing_image_paths: variant.existing_image_paths || [],
     }))
     formData.append('variants', JSON.stringify(variantsPayload))

@@ -11,13 +11,8 @@ class Product extends Model
     protected $fillable = [
         'name',
         'description',
-        'base_price',
         'image',
         'category_id',
-    ];
-
-    protected $casts = [
-        'base_price' => 'float',
     ];
 
     public function category(): BelongsTo

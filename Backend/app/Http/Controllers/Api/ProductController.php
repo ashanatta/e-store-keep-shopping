@@ -7,6 +7,7 @@ use App\Models\Product;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Storage;
+use Illuminate\Validation\ValidationException;
 
 class ProductController extends Controller
 {
@@ -28,10 +29,9 @@ class ProductController extends Controller
         $validatedData = $request->validate([
             'name' => 'required|string|max:255',
             'description' => 'nullable|string',
-            'base_price' => 'required|numeric|min:0',
             'category_id' => 'required|integer|exists:categories,id',
             'image' => 'nullable|image|mimes:jpeg,png,jpg,gif,svg|max:2048', // Changed to file validation
-            'variants' => 'nullable|json',
+            'variants' => 'required|json',
             'variant_images' => 'nullable|array',
             'variant_images.*' => 'nullable|array',
             'variant_images.*.*' => 'nullable|image|mimes:jpeg,png,jpg,gif,svg|max:4096',
@@ -48,7 +48,12 @@ class ProductController extends Controller
         if ($variantsPayload) {
             $variants = json_decode($variantsPayload, true);
             if (is_array($variants)) {
+                $this->validateVariantsPayload($variants);
                 $this->syncVariantsWithImages($request, $product, $variants);
+            } else {
+                throw ValidationException::withMessages([
+                    'variants' => ['Variants payload is invalid.'],
+                ]);
             }
         }
 
@@ -71,10 +76,9 @@ class ProductController extends Controller
         $validatedData = $request->validate([
             'name' => 'required|string|max:255',
             'description' => 'nullable|string',
-            'base_price' => 'required|numeric|min:0',
             'category_id' => 'required|integer|exists:categories,id',
             'image' => 'nullable|image|mimes:jpeg,png,jpg,gif,svg|max:2048', // Changed to file validation
-            'variants' => 'nullable|json',
+            'variants' => 'required|json',
             'variant_images' => 'nullable|array',
             'variant_images.*' => 'nullable|array',
             'variant_images.*.*' => 'nullable|image|mimes:jpeg,png,jpg,gif,svg|max:4096',
@@ -105,7 +109,12 @@ class ProductController extends Controller
 
             $variants = json_decode($variantsPayload, true);
             if (is_array($variants)) {
+                $this->validateVariantsPayload($variants);
                 $this->syncVariantsWithImages($request, $product, $variants);
+            } else {
+                throw ValidationException::withMessages([
+                    'variants' => ['Variants payload is invalid.'],
+                ]);
             }
         }
 
@@ -146,7 +155,7 @@ class ProductController extends Controller
                 'color_id' => $variantData['color_id'] ?? null,
                 'size_id' => $variantData['size_id'] ?? null,
                 'stock' => $variantData['stock'] ?? 0,
-                'price' => $variantData['price'] ?? null,
+                'price' => $variantData['price'],
             ]);
 
             $existingImagePaths = $variantData['existing_image_paths'] ?? [];
@@ -165,6 +174,24 @@ class ProductController extends Controller
                 $variant->images()->create([
                     'path' => $storedPath,
                     'sort_order' => count($existingImagePaths) + $position,
+                ]);
+            }
+        }
+    }
+
+    private function validateVariantsPayload(array $variants): void
+    {
+        if (count($variants) === 0) {
+            throw ValidationException::withMessages([
+                'variants' => ['At least one variant is required.'],
+            ]);
+        }
+
+        foreach ($variants as $index => $variant) {
+            $price = $variant['price'] ?? null;
+            if (!is_numeric($price) || (float) $price <= 0) {
+                throw ValidationException::withMessages([
+                    "variants.$index.price" => ['Each variant must have a valid price greater than 0.'],
                 ]);
             }
         }

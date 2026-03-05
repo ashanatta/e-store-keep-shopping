@@ -34,7 +34,7 @@ const items = ref([
     size: "S",
     color: "Black",
     quantity: 1,
-    base_price: 149.99,
+    price: 149.99,
     image: "https://images.unsplash.com/photo-1524504388940-b1c1722653e1"
   }
 ])

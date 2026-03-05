@@ -28,7 +28,8 @@
           <div class="text-muted small">({{ product.reviews }} reviews)</div>
         </div>
         <div class="d-flex align-items-center gap-2 mb-4">
-          <span class="fs-4 fw-bold">${{ currentPrice ? parseFloat(currentPrice).toFixed(2) : '0.00' }}</span>
+          <span v-if="currentPrice !== null" class="fs-4 fw-bold">${{ parseFloat(currentPrice).toFixed(2) }}</span>
+          <span v-else class="fs-6 fw-semibold text-muted">Select color and size to see price</span>
           <span
             v-if="product.originalPrice"
             class="text-muted text-decoration-line-through"
@@ -141,7 +142,7 @@
               <img :src="item.image" class="card-img-top" :alt="item.name" />
               <div class="card-body">
                 <div class="fw-semibold">{{ item.name }}</div>
-                <div class="text-muted small">${{ item.base_price ? parseFloat(item.base_price).toFixed(2) : '0.00' }}</div>
+                <div class="text-muted small">Select options</div>
               </div>
             </div>
           </router-link>
@@ -161,7 +162,6 @@ const product = ref({
   id: null,
   name: '',
   description: '',
-  base_price: 0,
   images: [],
   variants: [],
   rating: 0,
@@ -176,8 +176,6 @@ const selectedColorId = ref(null)
 const selectedSizeId = ref(null)
 const quantity = ref(1)
 const activeTab = ref("description")
-const fallbackColors = ref([])
-const fallbackSizes = ref([])
 
 const toId = (value) => {
   if (value === null || value === undefined || value === '') {
@@ -189,20 +187,8 @@ const toId = (value) => {
 
 const fetchProduct = async () => {
   try {
-    const [productRes, colorsRes, sizesRes] = await Promise.all([
-      axios.get(`/products/${route.params.id}`),
-      axios.get('/colors').catch(() => ({ data: [] })),
-      axios.get('/sizes').catch(() => ({ data: [] })),
-    ])
+    const productRes = await axios.get(`/products/${route.params.id}`)
     const data = productRes.data
-    fallbackColors.value = (colorsRes.data || []).map((color) => ({
-      ...color,
-      id: toId(color.id),
-    }))
-    fallbackSizes.value = (sizesRes.data || []).map((size) => ({
-      ...size,
-      id: toId(size.id),
-    }))
     
     // Transform data to match component structure
     product.value = {
@@ -220,8 +206,7 @@ const fetchProduct = async () => {
       reviews: 12,
       reviewsSummary: [],
       details: [
-        `Category: ${data.category?.name || 'Uncategorized'}`,
-        `Base Price: $${data.base_price}`
+        `Category: ${data.category?.name || 'Uncategorized'}`
       ]
     }
     
@@ -251,10 +236,7 @@ const uniqueColors = computed(() => {
 })
 
 const displayColors = computed(() => {
-  if (uniqueColors.value.length > 0) {
-    return uniqueColors.value
-  }
-  return fallbackColors.value
+  return uniqueColors.value
 })
 
 // Get available sizes for selected color
@@ -276,10 +258,7 @@ const availableSizes = computed(() => {
 })
 
 const displaySizes = computed(() => {
-  if (availableSizes.value.length > 0) {
-    return availableSizes.value
-  }
-  return fallbackSizes.value
+  return availableSizes.value
 })
 
 const displayImages = computed(() => {
@@ -325,13 +304,7 @@ watch(selectedColorId, (newColorId) => {
   )
   
   if (!sizeAvailable) {
-    // Select first available size for this color
-    const firstVariant = product.value.variants.find(v => toId(v.color_id) === toId(newColorId) && v.size)
-    if (firstVariant) {
-      selectedSizeId.value = firstVariant.size_id
-    } else {
-      selectedSizeId.value = null
-    }
+    selectedSizeId.value = null
   }
 })
 
@@ -356,7 +329,7 @@ const currentPrice = computed(() => {
       return variant.price
     }
   }
-  return product.value.base_price
+  return null
 })
 
 const relatedProducts = computed(() => []) // TODO: Implement related products
