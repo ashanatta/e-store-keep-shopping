@@ -13,7 +13,7 @@
             <th>Image</th>
             <th>Name</th>
             <th>Category</th>
-            <th>Base Price</th>
+            <th>From Price</th>
             <th>Actions</th>
           </tr>
         </thead>
@@ -23,7 +23,7 @@
             <td><img :src="`http://localhost:8000/storage/${product.image}`" alt="Product Image" style="width: 50px; height: 50px; object-fit: cover;"></td>
             <td>{{ product.name }}</td>
             <td>{{ product.category?.name || '-' }}</td>
-            <td>${{ product.base_price ? parseFloat(product.base_price).toFixed(2) : '0.00' }}</td>
+            <td>{{ formatPrice(getFromPrice(product)) }}</td>
             <td>
               <router-link :to="`/admin/products/${product.id}/edit`" class="btn btn-sm btn-info me-2">Edit</router-link>
               <button @click="handleDelete(product.id)" class="btn btn-sm btn-danger">Delete</button>
@@ -40,6 +40,15 @@ import { ref, onMounted } from 'vue'
 import axios from 'axios'
 
 const products = ref([])
+
+const getFromPrice = (product) => {
+  const prices = (product.variants || [])
+    .map((variant) => Number(variant.price))
+    .filter((price) => Number.isFinite(price) && price > 0)
+  return prices.length ? Math.min(...prices) : null
+}
+
+const formatPrice = (price) => (price ? `$${price.toFixed(2)}` : '-')
 
 const fetchProducts = async () => {
   try {
