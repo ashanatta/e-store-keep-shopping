@@ -10,8 +10,9 @@
           <li><router-link to="/admin/categories">Categories</router-link></li>
           <li><router-link to="/admin/colors">Colors</router-link></li>
           <li><router-link to="/admin/sizes">Sizes</router-link></li>
-          <li><router-link to="/admin/orders">Orders</router-link></li>
-          <li><router-link to="/admin/users">Users</router-link></li>
+          <li><router-link to="/admin/reviews">Reviews</router-link></li>
+          <li><router-link to="/admin/wishlists">Wishlists</router-link></li>
+          <li><router-link to="/admin/carts">Carts</router-link></li>
         </ul>
       </nav>
     </aside>

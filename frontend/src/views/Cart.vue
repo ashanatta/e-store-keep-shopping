@@ -1,26 +1,32 @@
 <template>
   <div class="container py-5">
-    <h3 class="fw-semibold mb-4">Shopping Cart ({{ items.length }} items)</h3>
+    <h3 class="fw-semibold mb-4">Shopping Cart ({{ count }} items)</h3>
+    <div v-if="!isAuthenticated" class="alert alert-warning">
+      Please login to view your cart.
+    </div>
     <div class="row g-4">
       <div class="col-lg-8">
-        <div class="d-flex flex-column gap-3">
+        <div v-if="isAuthenticated && items.length > 0" class="d-flex flex-column gap-3">
           <CartItem
             v-for="item in items"
             :key="item.id"
             :item="item"
             @increase="increaseQty"
             @decrease="decreaseQty"
-            @remove="removeItem"
+            @remove="removeCartItem"
           />
         </div>
-        <button class="btn btn-outline-dark w-100 mt-4" @click="clearCart">
+        <div v-else-if="isAuthenticated" class="alert alert-info">
+          Your cart is empty.
+        </div>
+        <button v-if="isAuthenticated && items.length > 0" class="btn btn-outline-dark w-100 mt-4" @click="handleClearCart">
           Clear Cart
         </button>
       </div>
       <div class="col-lg-4">
         <OrderSummary :items="items">
-          <button class="btn btn-dark w-100 mt-3">Proceed to Checkout</button>
-          <button class="btn btn-outline-dark w-100 mt-2">Continue Shopping</button>
+          <button class="btn btn-dark w-100 mt-3" :disabled="!isAuthenticated || items.length === 0">Proceed to Checkout</button>
+          <router-link to="/shop" class="btn btn-outline-dark w-100 mt-2">Continue Shopping</router-link>
           <div class="summary-benefits mt-4">
             <div class="d-flex align-items-center gap-2 mb-2">
               <i class="bi bi-shield-check text-success"></i>
@@ -42,42 +48,40 @@
 </template>
 
 <script setup>
-import { ref } from "vue"
+import { onMounted } from "vue"
 import CartItem from "@/components/cart/CartItem.vue"
 import OrderSummary from "@/components/common/OrderSummary.vue"
+import { useCart } from "@/composables/useCart.js"
+import { useAuth } from "@/composables/useAuth.js"
 
-const items = ref([
-  {
-    id: 1,
-    name: "Elegant Blazer",
-    category: "Blazers",
-    size: "S",
-    color: "Black",
-    quantity: 1,
-    price: 149.99,
-    image: "https://images.unsplash.com/photo-1524504388940-b1c1722653e1"
-  }
-])
+const { isAuthenticated } = useAuth()
+const { items, count, fetchCart, updateQuantity, removeItem, clearCart } = useCart()
 
-const increaseQty = (id) => {
+const increaseQty = async (id) => {
   const item = items.value.find((cartItem) => cartItem.id === id)
-  if (item) {
-    item.quantity += 1
-  }
+  if (!item) return
+  await updateQuantity(id, item.quantity + 1)
 }
 
-const decreaseQty = (id) => {
+const decreaseQty = async (id) => {
   const item = items.value.find((cartItem) => cartItem.id === id)
-  if (item && item.quantity > 1) {
-    item.quantity -= 1
+  if (!item || item.quantity <= 1) {
+    return
   }
+  await updateQuantity(id, item.quantity - 1)
 }
 
-const removeItem = (id) => {
-  items.value = items.value.filter((cartItem) => cartItem.id !== id)
+const removeCartItem = async (id) => {
+  await removeItem(id)
 }
 
-const clearCart = () => {
-  items.value = []
+const handleClearCart = async () => {
+  await clearCart()
 }
+
+onMounted(async () => {
+  if (isAuthenticated.value) {
+    await fetchCart()
+  }
+})
 </script>

@@ -17,7 +17,10 @@ class ProductController extends Controller
     public function index()
     {
         return response()->json(
-            Product::with('category:id,name', 'variants.color', 'variants.size', 'variants.images')->get()
+            Product::with('category:id,name', 'variants.color', 'variants.size', 'variants.images')
+                ->withCount('reviews')
+                ->withAvg('reviews', 'rating')
+                ->get()
         );
     }
 
@@ -65,7 +68,11 @@ class ProductController extends Controller
      */
     public function show(Product $product)
     {
-        return response()->json($product->load('category:id,name', 'variants.color', 'variants.size', 'variants.images'));
+        return response()->json(
+            $product->load('category:id,name', 'variants.color', 'variants.size', 'variants.images')
+                ->loadCount('reviews')
+                ->loadAvg('reviews', 'rating')
+        );
     }
 
     /**

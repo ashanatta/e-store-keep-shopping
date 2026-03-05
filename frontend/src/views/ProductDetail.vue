@@ -84,8 +84,8 @@
         </div>
 
         <div class="d-flex gap-3 mb-4">
-          <button class="btn btn-dark flex-grow-1">Add to Cart</button>
-          <button class="btn btn-outline-dark">♥</button>
+          <button class="btn btn-dark flex-grow-1" @click="addSelectedToCart">Add to Cart</button>
+          <button class="wishlist-heart-btn" :class="{ active: inWishlist }" @click="toggleWishlist">♥</button>
         </div>
 
         <ul class="list-unstyled small text-muted">
@@ -112,7 +112,7 @@
           :class="{ active: activeTab === 'reviews' }"
           @click="activeTab = 'reviews'"
         >
-          Reviews ({{ product.reviewsSummary.length }})
+          Reviews ({{ reviews.length }})
         </button>
       </div>
       <div class="tab-content">
@@ -124,10 +124,34 @@
           </ul>
         </div>
         <div v-else>
-          <div v-for="review in product.reviewsSummary" :key="review.name" class="review">
-            <div class="fw-semibold">{{ review.name }}</div>
-            <div class="text-warning small">★★★★★</div>
-            <div class="text-muted small">{{ review.text }}</div>
+          <div class="mb-3 small text-muted">
+            Average rating: {{ reviewSummary.average || 0 }} ({{ reviewSummary.count || 0 }} reviews)
+          </div>
+          <div v-if="isAuthenticated" class="mb-4 border rounded p-3">
+            <div class="fw-semibold mb-2">Write a Review</div>
+            <div class="mb-2">
+              <label class="form-label small">Rating</label>
+              <select v-model.number="reviewForm.rating" class="form-select form-select-sm">
+                <option :value="5">5</option>
+                <option :value="4">4</option>
+                <option :value="3">3</option>
+                <option :value="2">2</option>
+                <option :value="1">1</option>
+              </select>
+            </div>
+            <div class="mb-2">
+              <label class="form-label small">Comment</label>
+              <textarea v-model="reviewForm.comment" class="form-control" rows="3" placeholder="Share your experience"></textarea>
+            </div>
+            <button class="btn btn-sm btn-dark" :disabled="savingReview" @click="submitReview">
+              {{ savingReview ? "Submitting..." : "Submit Review" }}
+            </button>
+          </div>
+          <div v-if="reviews.length === 0" class="text-muted small">No reviews yet.</div>
+          <div v-for="review in reviews" :key="review.id" class="review">
+            <div class="fw-semibold">{{ review.user?.name || "User" }}</div>
+            <div class="text-warning small">{{ "★".repeat(Number(review.rating || 0)) }}</div>
+            <div class="text-muted small">{{ review.comment || "No comment" }}</div>
           </div>
         </div>
       </div>
@@ -156,8 +180,21 @@
 import { computed, ref, watch, onMounted } from "vue"
 import { useRoute } from "vue-router"
 import axios from "axios"
+import { useAuth } from "@/composables/useAuth.js"
+import { useCart } from "@/composables/useCart.js"
+import { useWishlist } from "@/composables/useWishlist.js"
+
+const FILE_BASE_URL = "http://localhost:8000/api/files/"
+
+const buildFileUrl = (path) => {
+  if (!path) return ""
+  return `${FILE_BASE_URL}${encodeURI(path)}`
+}
 
 const route = useRoute()
+const { isAuthenticated } = useAuth()
+const { addToCart, fetchCart } = useCart()
+const { toggle: toggleWishlistState, isInWishlist, fetchWishlist } = useWishlist()
 const product = ref({
   id: null,
   name: '',
@@ -170,6 +207,13 @@ const product = ref({
   details: []
 })
 const loading = ref(true)
+const savingReview = ref(false)
+const reviews = ref([])
+const reviewSummary = ref({ count: 0, average: 0 })
+const reviewForm = ref({
+  rating: 5,
+  comment: "",
+})
 
 const selectedImage = ref('')
 const selectedColorId = ref(null)
@@ -198,12 +242,12 @@ const fetchProduct = async () => {
         ...variant,
         color_id: toId(variant.color_id),
         size_id: toId(variant.size_id),
-        image_urls: (variant.images || []).map((img) => `http://localhost:8000/storage/${img.path}`),
+        image_urls: (variant.images || []).map((img) => buildFileUrl(img.path)),
       })),
       // Mock data for missing fields
-      images: data.image ? [`http://localhost:8000/storage/${data.image}`] : [],
-      rating: 4.5,
-      reviews: 12,
+      images: data.image ? [buildFileUrl(data.image)] : [],
+      rating: Number(data.reviews_avg_rating || 0),
+      reviews: Number(data.reviews_count || 0),
       reviewsSummary: [],
       details: [
         `Category: ${data.category?.name || 'Uncategorized'}`
@@ -220,7 +264,23 @@ const fetchProduct = async () => {
   }
 }
 
-onMounted(fetchProduct)
+const fetchReviews = async () => {
+  try {
+    const response = await axios.get(`/products/${route.params.id}/reviews`)
+    reviews.value = response.data.reviews || []
+    reviewSummary.value = response.data.summary || { count: 0, average: 0 }
+  } catch (error) {
+    console.error("Error fetching reviews:", error)
+  }
+}
+
+onMounted(async () => {
+  await fetchProduct()
+  await fetchReviews()
+  if (isAuthenticated.value) {
+    await fetchWishlist()
+  }
+})
 
 // Get unique colors from variants
 const uniqueColors = computed(() => {
@@ -332,6 +392,69 @@ const currentPrice = computed(() => {
   return null
 })
 
+const selectedVariant = computed(() => {
+  if (selectedColorId.value === null || selectedSizeId.value === null) {
+    return null
+  }
+  return product.value.variants.find((variant) =>
+    toId(variant.color_id) === toId(selectedColorId.value) &&
+    toId(variant.size_id) === toId(selectedSizeId.value)
+  ) || null
+})
+
+const inWishlist = computed(() => {
+  if (!product.value.id) return false
+  return isInWishlist(product.value.id).value
+})
+
+const addSelectedToCart = async () => {
+  if (!isAuthenticated.value) {
+    alert("Please login to add items to cart.")
+    return
+  }
+  if (!selectedVariant.value) {
+    alert("Please select color and size before adding to cart.")
+    return
+  }
+  await addToCart({
+    productId: product.value.id,
+    variantId: selectedVariant.value.id,
+    quantity: quantity.value,
+  })
+  await fetchCart()
+  alert("Added to cart successfully!")
+}
+
+const toggleWishlist = async () => {
+  if (!isAuthenticated.value) {
+    alert("Please login to use wishlist.")
+    return
+  }
+  await toggleWishlistState(product.value.id)
+}
+
+const submitReview = async () => {
+  if (!isAuthenticated.value) {
+    alert("Please login to write a review.")
+    return
+  }
+  try {
+    savingReview.value = true
+    await axios.post(`/products/${product.value.id}/reviews`, {
+      rating: reviewForm.value.rating,
+      comment: reviewForm.value.comment,
+    })
+    reviewForm.value.comment = ""
+    await fetchReviews()
+    await fetchProduct()
+  } catch (error) {
+    console.error("Error saving review:", error)
+    alert("Unable to submit review.")
+  } finally {
+    savingReview.value = false
+  }
+}
+
 const relatedProducts = computed(() => []) // TODO: Implement related products
 
 const discountLabel = computed(() => {
@@ -359,6 +482,7 @@ watch(() => route.params.id, () => {
   selectedSizeId.value = null
   quantity.value = 1
   fetchProduct()
+  fetchReviews()
 })
 </script>
 
@@ -472,5 +596,20 @@ watch(() => route.params.id, () => {
 .related-card {
   border-radius: 14px;
   overflow: hidden;
+}
+
+.wishlist-heart-btn {
+  border: 1px solid #212529;
+  background: #fff;
+  color: #212529;
+  border-radius: 0.375rem;
+  min-width: 44px;
+  font-size: 20px;
+  line-height: 1;
+}
+
+.wishlist-heart-btn.active {
+  border-color: #dc3545;
+  color: #dc3545;
 }
 </style>

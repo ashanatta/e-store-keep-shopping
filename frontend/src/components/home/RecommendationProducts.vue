@@ -76,7 +76,7 @@ export default {
         // Take random 4 products or specific ones
         this.products = response.data.slice(0, 4).map(p => ({
           ...p,
-          image: p.image ? `http://localhost:8000/storage/${p.image}` : 'https://via.placeholder.com/300x400',
+          image: p.image ? `http://localhost:8000/api/files/${p.image}` : 'https://via.placeholder.com/300x400',
           displayPrice: (() => {
             const prices = (p.variants || [])
               .map(v => Number(v.price))
