@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Models\Product;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Validation\ValidationException;
 
@@ -68,6 +69,16 @@ class ProductController extends Controller
      */
     public function show(Product $product)
     {
+        // Debugging: Log server time and product sale details
+        Log::info('ProductController@show Debug:', [
+            'Server Time (Carbon::now())' => \Carbon\Carbon::now()->toDateTimeString(),
+            'Product ID' => $product->id,
+            'Sale Start' => $product->sale_start ? $product->sale_start->toDateTimeString() : 'N/A',
+            'Sale End' => $product->sale_end ? $product->sale_end->toDateTimeString() : 'N/A',
+            'Discount Percentage' => $product->discount_percentage,
+            'Calculated Final Price' => $product->final_price, // Accessor will be called here
+        ]);
+
         return response()->json(
             $product->load('category:id,name', 'variants.color', 'variants.size', 'variants.images')
                 ->loadCount('reviews')
@@ -86,12 +97,32 @@ class ProductController extends Controller
             'category_id' => 'required|integer|exists:categories,id',
             'image' => 'nullable|image|mimes:jpeg,png,jpg,gif,svg|max:2048', // Changed to file validation
             'variants' => 'required|json',
+            'discount_percentage' => 'nullable|integer|min:0|max:100',
+            'sale_start' => 'nullable|date',
+            'sale_end' => 'nullable|date|after:sale_start',
             'variant_images' => 'nullable|array',
             'variant_images.*' => 'nullable|array',
             'variant_images.*.*' => 'nullable|image|mimes:jpeg,png,jpg,gif,svg|max:4096',
         ]);
+        // Explicitly set sale_start and sale_end to null if they are empty strings
+        if (isset($validatedData['sale_start']) && $validatedData['sale_start'] === '') {
+            $validatedData['sale_start'] = null;
+        }
+        if (isset($validatedData['sale_end']) && $validatedData['sale_end'] === '') {
+            $validatedData['sale_end'] = null;
+        }
         $variantsPayload = $validatedData['variants'] ?? null;
         unset($validatedData['variants']);
+
+        // Explicitly assign sale-related fields
+        $product->discount_percentage = $validatedData['discount_percentage'] ?? 0;
+        $product->sale_start = $validatedData['sale_start'] ?? null;
+        $product->sale_end = $validatedData['sale_end'] ?? null;
+
+        // Remove these fields from validatedData to prevent mass assignment conflicts
+        unset($validatedData['discount_percentage']);
+        unset($validatedData['sale_start']);
+        unset($validatedData['sale_end']);
 
         if ($request->hasFile('image')) {
             // Delete old image if it exists
@@ -101,7 +132,8 @@ class ProductController extends Controller
             $validatedData['image'] = $request->file('image')->store('products', 'public');
         }
 
-        $product->update($validatedData);
+        $product->fill($validatedData);
+        $product->save();
 
         if ($variantsPayload) {
             // Sync variants: easiest way is to delete old and recreate new

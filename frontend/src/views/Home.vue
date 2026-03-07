@@ -76,16 +76,10 @@ export default {
         this.products = response.data.slice(0, 8).map(p => ({
           ...p,
           image: p.image ? `http://localhost:8000/api/files/${p.image}` : 'https://via.placeholder.com/300x400',
-          displayPrice: (() => {
-            const prices = (p.variants || [])
-              .map(v => Number(v.price))
-              .filter(price => Number.isFinite(price) && price > 0)
-            return prices.length ? Math.min(...prices) : null
-          })(),
-          originalPrice: null,
-          rating: 4.5,
-          reviews: 10,
-          new: new Date(p.created_at) > new Date(Date.now() - 30 * 24 * 60 * 60 * 1000)
+          displayPrice: Number(p.final_price || p.min_variant_price || 0) || null,
+          originalPrice: Boolean(p.is_on_sale) ? (Number(p.min_variant_price || 0) || null) : null,
+          rating: Number(p.reviews_avg_rating || 0),
+          reviews: Number(p.reviews_count || 0)
         }))
       } catch (error) {
         console.error('Error fetching featured products:', error)

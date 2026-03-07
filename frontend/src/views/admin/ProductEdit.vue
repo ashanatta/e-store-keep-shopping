@@ -23,6 +23,18 @@
         </div>
       </div>
       <div class="mb-3">
+        <label for="discount_percentage" class="form-label">Discount Percentage (Optional)</label>
+        <input type="number" class="form-control" id="discount_percentage" v-model="product.discount_percentage" min="0" max="100" step="1">
+      </div>
+      <div class="mb-3">
+        <label for="sale_start" class="form-label">Sale Start Date (Optional)</label>
+        <input type="datetime-local" class="form-control" id="sale_start" v-model="product.sale_start">
+      </div>
+      <div class="mb-3">
+        <label for="sale_end" class="form-label">Sale End Date (Optional)</label>
+        <input type="datetime-local" class="form-control" id="sale_end" v-model="product.sale_end">
+      </div>
+      <div class="mb-3">
         <label for="image" class="form-label">Product Image</label>
         <input type="file" class="form-control" id="image" @change="handleImageChange" accept="image/*">
         <div v-if="product.image" class="mt-2">
@@ -138,8 +150,31 @@ const product = ref({
   name: '',
   description: '',
   category_id: '',
-  image: '' // This will store the image path from the backend
+  image: '', // This will store the image path from the backend
+  discount_percentage: 0,
+  sale_start: null,
+  sale_end: null,
 })
+
+const formatDateTimeLocal = (dateString) => {
+  if (!dateString) return null
+  const date = new Date(dateString)
+  if (Number.isNaN(date.getTime())) return null
+
+  const year = date.getFullYear()
+  const month = (date.getMonth() + 1).toString().padStart(2, '0')
+  const day = date.getDate().toString().padStart(2, '0')
+  const hours = date.getHours().toString().padStart(2, '0')
+  const minutes = date.getMinutes().toString().padStart(2, '0')
+  return `${year}-${month}-${day}T${hours}:${minutes}`
+}
+
+const toUtcISOString = (localDateTimeString) => {
+  if (!localDateTimeString) return null
+  const date = new Date(localDateTimeString)
+  if (Number.isNaN(date.getTime())) return null
+  return date.toISOString()
+}
 
 const imageFile = ref(null) // To store the actual file object for upload
 
@@ -217,7 +252,9 @@ onMounted(async () => {
     const response = await axios.get(`/products/${product.value.id}`)
     product.value = {
       ...response.data,
-      category_id: response.data.category_id || response.data.category?.id || ''
+      category_id: response.data.category_id || response.data.category?.id || '',
+      sale_start: formatDateTimeLocal(response.data.sale_start),
+      sale_end: formatDateTimeLocal(response.data.sale_end),
     }
     // Map variants from backend
     if (response.data.variants) {
@@ -239,11 +276,26 @@ onMounted(async () => {
 
 const handleSubmit = async () => {
   try {
+    const saleStartUtc = toUtcISOString(product.value.sale_start)
+    const saleEndUtc = toUtcISOString(product.value.sale_end)
+
+    if (saleStartUtc && saleEndUtc && new Date(saleEndUtc) <= new Date(saleStartUtc)) {
+      alert('Sale end must be after sale start.')
+      return
+    }
+
     const formData = new FormData()
     formData.append('_method', 'PUT') // Laravel expects _method for PUT requests with FormData
     formData.append('name', product.value.name)
     formData.append('description', product.value.description)
     formData.append('category_id', product.value.category_id)
+    formData.append('discount_percentage', product.value.discount_percentage)
+    if (saleStartUtc) {
+      formData.append('sale_start', saleStartUtc)
+    }
+    if (saleEndUtc) {
+      formData.append('sale_end', saleEndUtc)
+    }
     if (imageFile.value) {
       formData.append('image', imageFile.value)
     }
