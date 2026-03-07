@@ -105,15 +105,8 @@
                     v-if="product.originalPrice"
                     class="badge bg-danger position-absolute top-0 start-0 m-2"
                   >
-                    Sale
+                    Sale {{ product.discount_percentage }}% OFF
                   </span>
-                  <span
-                    v-if="product.isNew"
-                    class="badge bg-primary position-absolute top-0 start-0 m-2"
-                  >
-                    New
-                  </span>
-
                   <button class="wishlist-btn" type="button">♥</button>
                 </div>
               </router-link>
@@ -126,17 +119,19 @@
                 >
                   <div class="fw-semibold mb-1">{{ product.name }}</div>
                   <div class="rating small text-muted mb-2">
-                    ⭐ {{ product.rating }} ({{ product.reviews }})
+                    <span class="text-warning">{{ renderStars(product.rating) }}</span> {{ product.rating.toFixed(1) }} ({{ product.reviews }})
                   </div>
                   <div>
-                    <span v-if="product.displayPrice !== null" class="fw-bold">${{ product.displayPrice.toFixed(2) }}</span>
+                    <template v-if="product.displayPrice !== null">
+                      <span class="fw-bold">${{ product.displayPrice.toFixed(2) }}</span>
+                      <span
+                        v-if="product.originalPrice && product.displayPrice !== product.originalPrice"
+                        class="text-muted text-decoration-line-through ms-2"
+                      >
+                        ${{ product.originalPrice.toFixed(2) }}
+                      </span>
+                    </template>
                     <span v-else class="fw-bold">Select options</span>
-                    <span
-                      v-if="product.originalPrice"
-                      class="text-muted text-decoration-line-through ms-2"
-                    >
-                      ${{ product.originalPrice.toFixed(2) }}
-                    </span>
                   </div>
                 </router-link>
               </div>
@@ -194,16 +189,10 @@ const fetchProducts = async () => {
     products.value = response.data.map(p => ({
       ...p,
       image: p.image ? `http://localhost:8000/api/files/${p.image}` : 'https://via.placeholder.com/300x400',
-      originalPrice: null, // Add logic if you have original price in backend
-      rating: 4.5, // Mock rating
-      reviews: 0, // Mock reviews
-      isNew: new Date(p.created_at) > new Date(Date.now() - 30 * 24 * 60 * 60 * 1000), // New if created in last 30 days
-      displayPrice: (() => {
-        const prices = (p.variants || [])
-          .map(v => Number(v.price))
-          .filter(price => Number.isFinite(price) && price > 0)
-        return prices.length ? Math.min(...prices) : null
-      })(),
+      rating: Number(p.reviews_avg_rating || 0),
+      reviews: Number(p.reviews_count || 0),
+      displayPrice: Number(p.final_price || p.min_variant_price || 0) || null,
+      originalPrice: Boolean(p.is_on_sale) ? (Number(p.min_variant_price || 0) || null) : null,
       sizes: (p.variants || [])
         .map(v => v.size?.name)
         .filter(Boolean),
@@ -304,6 +293,12 @@ const clearFilters = () => {
   selectedSizes.value = []
   selectedColors.value = []
   selectedRatings.value = []
+}
+
+const renderStars = (rating) => {
+  const filledStars = "★".repeat(Math.floor(rating))
+  const emptyStars = "☆".repeat(5 - Math.floor(rating))
+  return filledStars + emptyStars
 }
 </script>
 

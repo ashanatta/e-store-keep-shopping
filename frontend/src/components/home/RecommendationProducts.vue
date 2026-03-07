@@ -22,25 +22,18 @@
               </span>
 
               <span
-                v-if="product.originalPrice"
+                v-if="product.originalPrice && product.displayPrice !== product.originalPrice"
                 class="text-muted text-decoration-line-through ms-2"
               >
-                Rs. {{ product.originalPrice }}
+                Rs. {{ product.originalPrice.toFixed(2) }}
               </span>
             </p>
 
             <!-- Rating -->
             <p class="text-warning mb-1">
-              ⭐ {{ product.rating }} ({{ product.reviews }} reviews)
+              <span class="text-warning">{{ renderStars(product.rating) }}</span> {{ product.rating.toFixed(1) }} ({{ product.reviews }} reviews)
             </p>
 
-            <!-- New Badge -->
-            <span
-              v-if="product.new"
-              class="badge bg-success"
-            >
-              NEW
-            </span>
           </div>
 
           <div class="card-footer text-center">
@@ -77,16 +70,10 @@ export default {
         this.products = response.data.slice(0, 4).map(p => ({
           ...p,
           image: p.image ? `http://localhost:8000/api/files/${p.image}` : 'https://via.placeholder.com/300x400',
-          displayPrice: (() => {
-            const prices = (p.variants || [])
-              .map(v => Number(v.price))
-              .filter(price => Number.isFinite(price) && price > 0)
-            return prices.length ? Math.min(...prices) : null
-          })(),
-          originalPrice: null,
-          rating: 4.5,
-          reviews: 5,
-          new: false
+          displayPrice: Number(p.final_price || p.min_variant_price || 0) || null,
+          originalPrice: Boolean(p.is_on_sale) ? (Number(p.min_variant_price || 0) || null) : null,
+          rating: Number(p.reviews_avg_rating || 0),
+          reviews: Number(p.reviews_count || 0)
         }))
       } catch (error) {
         console.error('Error fetching recommendations:', error)
@@ -95,6 +82,11 @@ export default {
     addToCart(product) {
       // Basic add to cart logic, can be enhanced
       console.log('Add to cart:', product)
+    },
+    renderStars(rating) {
+      const filledStars = "★".repeat(Math.floor(rating))
+      const emptyStars = "☆".repeat(5 - Math.floor(rating))
+      return filledStars + emptyStars
     }
   },
   

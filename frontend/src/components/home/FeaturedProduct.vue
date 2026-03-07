@@ -6,17 +6,10 @@
         <img :src="product.image" class="card-img-top" />
 
         <span
-          v-if="product.originalPrice"
+          v-if="product.discount_percentage > 0 && product.originalPrice"
           class="badge bg-danger position-absolute top-0 start-0 m-2"
         >
-          Sale
-        </span>
-
-        <span
-          v-if="product.new"
-          class="badge bg-primary position-absolute top-0 start-0 m-2"
-        >
-          New
+          {{ product.discount_percentage }}% OFF
         </span>
 
         <button
@@ -33,19 +26,20 @@
         <h6 class="mb-1">{{ product.name }}</h6>
 
         <div class="mb-2 small text-muted">
-          ⭐ {{ product.rating }} ({{ product.reviews }})
+          <span class="text-warning">{{ renderStars(product.rating) }}</span> {{ product.rating.toFixed(1) }} ({{ product.reviews }})
         </div>
 
         <div>
-          <span v-if="product.displayPrice !== null" class="fw-bold">${{ product.displayPrice.toFixed(2) }}</span>
+          <template v-if="product.displayPrice !== null">
+            <span class="fw-bold">${{ product.displayPrice.toFixed(2) }}</span>
+            <span
+              v-if="product.originalPrice && product.displayPrice !== product.originalPrice"
+              class="text-muted text-decoration-line-through ms-2"
+            >
+              ${{ product.originalPrice.toFixed(2) }}
+            </span>
+          </template>
           <span v-else class="fw-bold">Select options</span>
-
-          <span
-            v-if="product.originalPrice"
-            class="text-muted text-decoration-line-through ms-2"
-          >
-            ${{ product.originalPrice.toFixed(2) }}
-          </span>
         </div>
       </router-link>
     </div>
@@ -57,6 +51,12 @@
 defineProps({
   product: Object
 })
+
+const renderStars = (rating) => {
+  const filledStars = "★".repeat(Math.floor(rating))
+  const emptyStars = "☆".repeat(5 - Math.floor(rating))
+  return filledStars + emptyStars
+}
 </script>
 
 <style scoped>

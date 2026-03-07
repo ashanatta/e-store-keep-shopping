@@ -23,7 +23,15 @@
             <td><img :src="`http://localhost:8000/api/files/${product.image}`" alt="Product Image" style="width: 50px; height: 50px; object-fit: cover;"></td>
             <td>{{ product.name }}</td>
             <td>{{ product.category?.name || '-' }}</td>
-            <td>{{ formatPrice(getFromPrice(product)) }}</td>
+            <td>
+              <span class="fw-bold">${{ product.final_price.toFixed(2) }}</span>
+              <span
+                v-if="product.sale_price && product.final_price !== product.price"
+                class="text-muted text-decoration-line-through ms-2"
+              >
+                ${{ product.price.toFixed(2) }}
+              </span>
+            </td>
             <td>
               <router-link :to="`/admin/products/${product.id}/edit`" class="btn btn-sm btn-info me-2">Edit</router-link>
               <button @click="handleDelete(product.id)" class="btn btn-sm btn-danger">Delete</button>
@@ -41,19 +49,17 @@ import axios from 'axios'
 
 const products = ref([])
 
-const getFromPrice = (product) => {
-  const prices = (product.variants || [])
-    .map((variant) => Number(variant.price))
-    .filter((price) => Number.isFinite(price) && price > 0)
-  return prices.length ? Math.min(...prices) : null
-}
-
-const formatPrice = (price) => (price ? `$${price.toFixed(2)}` : '-')
-
 const fetchProducts = async () => {
   try {
     const response = await axios.get('/products')
-    products.value = response.data
+    products.value = response.data.map(p => ({
+      ...p,
+      price: Number(p.price || 0),
+      sale_price: p.sale_price ? Number(p.sale_price) : null,
+      sale_start: p.sale_start || null,
+      sale_end: p.sale_end || null,
+      final_price: Number(p.final_price || p.price || 0),
+    }))
   } catch (error) {
     console.error('Error fetching products:', error)
     alert('Failed to fetch products.')

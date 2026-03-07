@@ -23,20 +23,19 @@
         <div class="text-muted small mb-2">{{ product.type }}</div>
         <h2 class="fw-semibold mb-2">{{ product.name }}</h2>
         <div class="d-flex align-items-center gap-2 mb-3">
-          <div class="text-warning">★★★★★</div>
-          <div class="text-muted small">{{ product.rating.toFixed(1) }}</div>
-          <div class="text-muted small">({{ product.reviews }} reviews)</div>
-        </div>
+            <div class="text-warning">{{ renderStars(product.rating) }}</div>
+            <div class="text-muted small">{{ product.rating.toFixed(1) }}</div>
+            <div class="text-muted small">({{ product.reviews }} reviews)</div>
+          </div>
         <div class="d-flex align-items-center gap-2 mb-4">
-          <span v-if="currentPrice !== null" class="fs-4 fw-bold">${{ parseFloat(currentPrice).toFixed(2) }}</span>
-          <span v-else class="fs-6 fw-semibold text-muted">Select color and size to see price</span>
+          <span class="fs-4 fw-bold">${{ parseFloat(product.final_price).toFixed(2) }}</span>
           <span
-            v-if="product.originalPrice"
+            v-if="product.is_on_sale && product.original_base_price > 0"
             class="text-muted text-decoration-line-through"
           >
-            ${{ product.originalPrice.toFixed(2) }}
+            ${{ product.original_base_price.toFixed(2) }}
           </span>
-          <span v-if="product.originalPrice" class="badge bg-danger">
+          <span v-if="product.is_on_sale && product.original_base_price > 0" class="badge bg-danger">
             {{ discountLabel }}
           </span>
         </div>
@@ -75,12 +74,14 @@
 
         <div class="d-flex align-items-center gap-3 mb-4">
           <div class="fw-semibold">Quantity</div>
-          <div class="quantity-box">
-            <button type="button" @click="decreaseQty">-</button>
-            <span>{{ quantity }}</span>
-            <button type="button" @click="increaseQty">+</button>
+          <div v-if="showQuantityCounter" class="quantity-box">
+            <!-- <button type="button" @click="decreaseQty">-</button> -->
+            <span>:</span>
+            <!-- <button type="button" @click="increaseQty">+</button> -->
           </div>
-          <div class="text-success small">In Stock</div>
+          <div :class="displayStockStatus === 'In Stock' ? 'text-success' : 'text-danger'" class="small">
+            {{ displayStockStatus }}
+          </div>
         </div>
 
         <div class="d-flex gap-3 mb-4">
@@ -127,7 +128,7 @@
           <div class="mb-3 small text-muted">
             Average rating: {{ reviewSummary.average || 0 }} ({{ reviewSummary.count || 0 }} reviews)
           </div>
-          <div v-if="isAuthenticated" class="mb-4 border rounded p-3">
+          <div v-if="isAuthenticated && !hasUserReviewed" class="mb-4 border rounded p-3">
             <div class="fw-semibold mb-2">Write a Review</div>
             <div class="mb-2">
               <label class="form-label small">Rating</label>
@@ -146,6 +147,9 @@
             <button class="btn btn-sm btn-dark" :disabled="savingReview" @click="submitReview">
               {{ savingReview ? "Submitting..." : "Submit Review" }}
             </button>
+          </div>
+          <div v-else-if="isAuthenticated && hasUserReviewed" class="mb-4 border rounded p-3 text-muted small">
+            You have already reviewed this product.
           </div>
           <div v-if="reviews.length === 0" class="text-muted small">No reviews yet.</div>
           <div v-for="review in reviews" :key="review.id" class="review">
@@ -192,7 +196,7 @@ const buildFileUrl = (path) => {
 }
 
 const route = useRoute()
-const { isAuthenticated } = useAuth()
+const { isAuthenticated, user } = useAuth()
 const { addToCart, fetchCart } = useCart()
 const { toggle: toggleWishlistState, isInWishlist, fetchWishlist } = useWishlist()
 const product = ref({
@@ -204,7 +208,13 @@ const product = ref({
   rating: 0,
   reviews: 0,
   reviewsSummary: [],
-  details: []
+  details: [],
+  discount_percentage: 0,
+  sale_start: null,
+  sale_end: null,
+  is_on_sale: false,
+  original_base_price: 0, // New field to store the original price from variants
+  final_price: 0,
 })
 const loading = ref(true)
 const savingReview = ref(false)
@@ -214,6 +224,7 @@ const reviewForm = ref({
   rating: 5,
   comment: "",
 })
+const hasUserReviewed = ref(false)
 
 const selectedImage = ref('')
 const selectedColorId = ref(null)
@@ -251,7 +262,13 @@ const fetchProduct = async () => {
       reviewsSummary: [],
       details: [
         `Category: ${data.category?.name || 'Uncategorized'}`
-      ]
+      ],
+      discount_percentage: Number(data.discount_percentage || 0),
+      sale_start: data.sale_start || null,
+      sale_end: data.sale_end || null,
+      is_on_sale: Boolean(data.is_on_sale),
+      original_base_price: Number(data.min_variant_price || data.final_price || 0),
+      final_price: Number(data.final_price || 0),
     }
     
     if (displayImages.value.length > 0) {
@@ -269,6 +286,9 @@ const fetchReviews = async () => {
     const response = await axios.get(`/products/${route.params.id}/reviews`)
     reviews.value = response.data.reviews || []
     reviewSummary.value = response.data.summary || { count: 0, average: 0 }
+    if (user.value) {
+      hasUserReviewed.value = reviews.value.some(review => review.user_id === user.value.id)
+    }
   } catch (error) {
     console.error("Error fetching reviews:", error)
   }
@@ -397,10 +417,29 @@ const selectedVariant = computed(() => {
     return null
   }
   return product.value.variants.find((variant) =>
-    toId(variant.color_id) === toId(selectedColorId.value) &&
-    toId(variant.size_id) === toId(selectedSizeId.value)
-  ) || null
-})
+      toId(variant.color_id) === toId(selectedColorId.value) &&
+      toId(variant.size_id) === toId(selectedSizeId.value)
+    ) || null
+  })
+  
+  const currentStock = computed(() => {
+    return selectedVariant.value ? selectedVariant.value.stock : 0
+  })
+
+const overallProductInStock = computed(() => {
+    return product.value.variants.some(variant => variant.stock > 0)
+  })
+
+  const displayStockStatus = computed(() => {
+    if (selectedVariant.value) {
+      return currentStock.value > 0 ? 'In Stock' : 'Out of Stock'
+    }
+    return overallProductInStock.value ? 'In Stock' : 'Out of Stock'
+  })
+
+  const showQuantityCounter = computed(() => {
+    return selectedVariant.value && currentStock.value > 0
+  })
 
 const inWishlist = computed(() => {
   if (!product.value.id) return false
@@ -414,6 +453,10 @@ const addSelectedToCart = async () => {
   }
   if (!selectedVariant.value) {
     alert("Please select color and size before adding to cart.")
+    return
+  }
+  if (currentStock.value === 0) {
+    alert("This product is out of stock.")
     return
   }
   await addToCart({
@@ -458,14 +501,17 @@ const submitReview = async () => {
 const relatedProducts = computed(() => []) // TODO: Implement related products
 
 const discountLabel = computed(() => {
-  if (!product.value.originalPrice) {
+  if (!product.value.is_on_sale || product.value.discount_percentage === 0) {
     return ""
   }
-  const percent = Math.round(
-    ((product.value.originalPrice - currentPrice.value) / product.value.originalPrice) * 100
-  )
-  return `${percent}% OFF`
+  return `${product.value.discount_percentage}% OFF`
 })
+
+const renderStars = (rating) => {
+  const filledStars = "★".repeat(Math.floor(rating))
+  const emptyStars = "☆".repeat(5 - Math.floor(rating))
+  return filledStars + emptyStars
+}
 
 const decreaseQty = () => {
   if (quantity.value > 1) {
