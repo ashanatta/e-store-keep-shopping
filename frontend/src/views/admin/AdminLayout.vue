@@ -13,6 +13,7 @@
           <li><router-link to="/admin/reviews">Reviews</router-link></li>
           <li><router-link to="/admin/wishlists">Wishlists</router-link></li>
           <li><router-link to="/admin/carts">Carts</router-link></li>
+          <li><router-link to="/admin/orders">Orders</router-link></li>
         </ul>
       </nav>
     </aside>

@@ -10,6 +10,8 @@ import Shop from '@/views/Shop.vue'
 import ProductDetail from '@/views/ProductDetail.vue'
 import Cart from '@/views/Cart.vue'
 import Checkout from '@/views/Checkout.vue'
+import OrderList from '@/views/OrderList.vue'
+import OrderDetail from '@/views/OrderDetail.vue'
 import Sales from '@/views/Sales.vue'
 import About from '@/views/About.vue'
 import Login from '@/views/Login.vue'
@@ -24,6 +26,7 @@ import SizeList from '@/views/admin/SizeList.vue'
 import ReviewList from '@/views/admin/ReviewList.vue'
 import WishlistList from '@/views/admin/WishlistList.vue'
 import CartList from '@/views/admin/CartList.vue'
+import AdminOrderList from '@/views/admin/AdminOrderList.vue'
 import { useAuth } from '@/composables/useAuth'
 
 // Define routes
@@ -36,6 +39,8 @@ const routes = [
   { path: '/product/:id', name: 'ProductDetail', component: ProductDetail },
   { path: '/cart', name: 'Cart', component: Cart },
   { path: '/checkout', name: 'Checkout', component: Checkout },
+  { path: '/orders', name: 'OrderList', component: OrderList, meta: { requiresAuth: true } },
+  { path: '/orders/:id', name: 'OrderDetail', component: OrderDetail, meta: { requiresAuth: true } },
   { path: '/sales', name: 'Sales', component: Sales },
   { path: '/about', name: 'About', component: About },
   { path: '/login', name: 'Login', component: Login },
@@ -55,6 +60,7 @@ const routes = [
       { path: 'reviews', name: 'AdminReviews', component: ReviewList },
       { path: 'wishlists', name: 'AdminWishlists', component: WishlistList },
       { path: 'carts', name: 'AdminCarts', component: CartList },
+      { path: 'orders', name: 'AdminOrders', component: AdminOrderList },
     ],
     meta: { requiresAuth: true, requiresAdmin: true } // Add meta fields for auth/admin checks
   }

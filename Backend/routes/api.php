@@ -10,6 +10,7 @@ use App\Http\Controllers\Api\SizeController;
 use App\Http\Controllers\Api\ReviewController;
 use App\Http\Controllers\Api\WishlistController;
 use App\Http\Controllers\Api\CartController;
+use App\Http\Controllers\Api\OrderController;
 use App\Http\Controllers\Api\AdminCommerceController;
 use Illuminate\Support\Facades\Route;
 use Illuminate\Support\Facades\Storage;
@@ -57,6 +58,10 @@ Route::middleware(['auth:sanctum'])->group(function () {
     Route::patch('/cart/{cartItem}', [CartController::class, 'update']);
     Route::delete('/cart/{cartItem}', [CartController::class, 'destroy']);
     Route::delete('/cart', [CartController::class, 'clear']);
+
+    Route::get('/orders', [OrderController::class, 'index']);
+    Route::post('/orders', [OrderController::class, 'store']);
+    Route::get('/orders/{order}', [OrderController::class, 'show']);
 });
 
 Route::middleware(['auth:sanctum', 'admin'])->group(function () {
@@ -67,4 +72,6 @@ Route::middleware(['auth:sanctum', 'admin'])->group(function () {
     Route::get('/admin/reviews', [AdminCommerceController::class, 'reviews']);
     Route::get('/admin/wishlists', [AdminCommerceController::class, 'wishlists']);
     Route::get('/admin/carts', [AdminCommerceController::class, 'carts']);
+    Route::get('/admin/orders', [AdminCommerceController::class, 'orders']);
+    Route::patch('/admin/orders/{order}/status', [AdminCommerceController::class, 'updateOrderStatus']);
 });
