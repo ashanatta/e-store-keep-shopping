@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Api;
 use App\Http\Controllers\Controller;
 use App\Models\Order;
 use App\Models\OrderItem;
+use App\Models\ProductVariant;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Str;
@@ -60,49 +61,85 @@ class OrderController extends Controller
             'totals.total' => 'required|numeric',
         ]);
 
-        return DB::transaction(function () use ($request, $validated) {
-            $user = $request->user();
-            
-            $order = Order::create([
-                'user_id' => $user->id,
-                'order_number' => 'ORD-' . strtoupper(Str::random(10)),
-                'full_name' => $validated['shipping']['fullName'],
-                'email' => $validated['shipping']['email'],
-                'phone_number' => $validated['shipping']['phoneNumber'],
-                'street_address' => $validated['shipping']['streetAddress'],
-                'city' => $validated['shipping']['city'],
-                'state' => $validated['shipping']['state'],
-                'zip_code' => $validated['shipping']['zipCode'],
-                'country' => $validated['shipping']['country'],
-                'payment_method' => $validated['payment']['method'],
-                'payment_status' => $validated['payment']['method'] === 'cod' ? 'pending' : 'paid', // For now, mock payment as paid if not COD
-                'status' => 'pending',
-                'subtotal' => $validated['totals']['subtotal'],
-                'shipping' => $validated['totals']['shipping'],
-                'tax' => $validated['totals']['tax'],
-                'total' => $validated['totals']['total'],
-            ]);
+        try {
+            return DB::transaction(function () use ($request, $validated) {
+                $user = $request->user();
+                
+                // First, check and deduct stock for each item
+                $itemsToProcess = [];
+                foreach ($validated['items'] as $itemData) {
+                    if (isset($itemData['variantId'])) {
+                        $variant = ProductVariant::where('id', $itemData['variantId'])->lockForUpdate()->first();
+                        
+                        if (!$variant) {
+                            throw new \Exception("Product variant not found.");
+                        }
 
-            foreach ($validated['items'] as $item) {
-                OrderItem::create([
-                    'order_id' => $order->id,
-                    'product_id' => $item['productId'],
-                    'product_variant_id' => $item['variantId'],
-                    'product_name' => $item['name'],
-                    'variant_info' => ($item['color'] ?? '-') . ' / ' . ($item['size'] ?? '-'),
-                    'quantity' => $item['quantity'],
-                    'price' => $item['price'],
+                        if ($variant->stock < $itemData['quantity']) {
+                            throw new \Exception("Insufficient stock for product: {$itemData['name']}. Only {$variant->stock} left.");
+                        }
+
+                        // Deduct stock
+                        $variant->stock -= $itemData['quantity'];
+                        $variant->save();
+                        
+                        $itemsToProcess[] = [
+                            'data' => $itemData,
+                            'variant' => $variant
+                        ];
+                    } else {
+                        // If your system supports products without variants, handle that here.
+                        // For now, based on your current setup, we'll assume variants are used.
+                        throw new \Exception("Product variant is required for order.");
+                    }
+                }
+
+                $order = Order::create([
+                    'user_id' => $user->id,
+                    'order_number' => 'ORD-' . strtoupper(Str::random(10)),
+                    'full_name' => $validated['shipping']['fullName'],
+                    'email' => $validated['shipping']['email'],
+                    'phone_number' => $validated['shipping']['phoneNumber'],
+                    'street_address' => $validated['shipping']['streetAddress'],
+                    'city' => $validated['shipping']['city'],
+                    'state' => $validated['shipping']['state'],
+                    'zip_code' => $validated['shipping']['zipCode'],
+                    'country' => $validated['shipping']['country'],
+                    'payment_method' => $validated['payment']['method'],
+                    'payment_status' => $validated['payment']['method'] === 'cod' ? 'pending' : 'paid',
+                    'status' => 'pending',
+                    'subtotal' => $validated['totals']['subtotal'],
+                    'shipping' => $validated['totals']['shipping'],
+                    'tax' => $validated['totals']['tax'],
+                    'total' => $validated['totals']['total'],
                 ]);
-            }
 
-            // Clear the user's cart after successful order
-            $user->cartItems()->delete();
+                foreach ($itemsToProcess as $processedItem) {
+                    $item = $processedItem['data'];
+                    OrderItem::create([
+                        'order_id' => $order->id,
+                        'product_id' => $item['productId'],
+                        'product_variant_id' => $item['variantId'],
+                        'product_name' => $item['name'],
+                        'variant_info' => ($item['color'] ?? '-') . ' / ' . ($item['size'] ?? '-'),
+                        'quantity' => $item['quantity'],
+                        'price' => $item['price'],
+                    ]);
+                }
 
+                // Clear the user's cart after successful order
+                $user->cartItems()->delete();
+
+                return response()->json([
+                    'message' => 'Order placed successfully',
+                    'order' => $order->load('items')
+                ], 201);
+            }, 5); // Retry 5 times in case of deadlock
+        } catch (\Exception $e) {
             return response()->json([
-                'message' => 'Order placed successfully',
-                'order' => $order->load('items')
-            ], 201);
-        });
+                'message' => $e->getMessage()
+            ], 422);
+        }
     }
 
     /**
