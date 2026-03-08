@@ -13,9 +13,6 @@
         <div class="col-md-4">
           <button class="btn btn-dark w-100" type="submit">Add Category</button>
         </div>
-        <div v-if="message" class="col-12">
-          <div class="alert py-2 mb-0" :class="messageTypeClass">{{ message }}</div>
-        </div>
       </form>
     </div>
 
@@ -88,40 +85,28 @@
 <script setup>
 import { computed, onMounted, ref } from "vue"
 import { useCategories } from "@/composables/useCategories.js"
+import { useToast } from "@/composables/useToast.js"
 
 const { categories, fetchCategories, createCategory, updateCategory, deleteCategory } =
   useCategories()
+const { success, error: toastError } = useToast()
 
 const newCategory = ref("")
-const message = ref("")
-const messageType = ref("success")
 const editingId = ref(null)
 const editValue = ref("")
-
-const messageTypeClass = computed(() =>
-  messageType.value === "success" ? "alert-success" : "alert-danger"
-)
-
-const setMessage = (text, type = "success") => {
-  message.value = text
-  messageType.value = type
-  window.setTimeout(() => {
-    message.value = ""
-  }, 2000)
-}
 
 const handleAdd = async () => {
   const name = newCategory.value.trim()
   if (!name) {
-    setMessage("Category name is required", "error")
+    toastError("Category name is required")
     return
   }
   try {
     await createCategory(name)
     newCategory.value = ""
-    setMessage("Category added", "success")
+    success("Category added successfully")
   } catch (err) {
-    setMessage(err?.response?.data?.message || "Failed to add category", "error")
+    toastError(err?.response?.data?.message || "Failed to add category")
   }
 }
 
@@ -138,15 +123,15 @@ const cancelEdit = () => {
 const saveEdit = async (category) => {
   const name = editValue.value.trim()
   if (!name) {
-    setMessage("Category name is required", "error")
+    toastError("Category name is required")
     return
   }
   try {
     await updateCategory(category.id, name)
     cancelEdit()
-    setMessage("Category updated", "success")
+    success("Category updated successfully")
   } catch (err) {
-    setMessage(err?.response?.data?.message || "Failed to update category", "error")
+    toastError(err?.response?.data?.message || "Failed to update category")
   }
 }
 
@@ -157,9 +142,9 @@ const remove = async (category) => {
     if (editingId.value === category.id) {
       cancelEdit()
     }
-    setMessage("Category deleted", "success")
+    success("Category deleted successfully")
   } catch (err) {
-    setMessage(err?.response?.data?.message || "Failed to delete category", "error")
+    toastError(err?.response?.data?.message || "Failed to delete category")
   }
 }
 
@@ -167,7 +152,7 @@ onMounted(async () => {
   try {
     await fetchCategories()
   } catch (err) {
-    setMessage(err?.response?.data?.message || "Failed to load categories", "error")
+    toastError(err?.response?.data?.message || "Failed to load categories")
   }
 })
 </script>

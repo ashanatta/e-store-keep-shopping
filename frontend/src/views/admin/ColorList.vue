@@ -85,11 +85,13 @@
 <script setup>
 import { ref, onMounted } from 'vue'
 import axios from 'axios'
+import { useToast } from '@/composables/useToast.js'
 
 const colors = ref([])
 const newColor = ref({ name: '', code: '#000000' })
 const editingId = ref(null)
 const editData = ref({ name: '', code: '' })
+const { success, error: toastError } = useToast()
 
 const normalizeHexColor = (value) => {
   if (!value) return '#000000'
@@ -110,9 +112,9 @@ const fetchColors = async () => {
   try {
     const response = await axios.get('/colors')
     colors.value = response.data
-  } catch (error) {
-    console.error('Error fetching colors:', error)
-    alert('Failed to fetch colors.')
+  } catch (err) {
+    console.error('Error fetching colors:', err)
+    toastError('Failed to fetch colors.')
   }
 }
 
@@ -125,10 +127,10 @@ const handleAdd = async () => {
     const response = await axios.post('/colors', payload)
     colors.value.push(response.data)
     newColor.value = { name: '', code: '#000000' }
-    alert('Color added successfully!')
-  } catch (error) {
-    console.error('Error adding color:', error)
-    alert('Failed to add color.')
+    success('Color added successfully!')
+  } catch (err) {
+    console.error('Error adding color:', err)
+    toastError('Failed to add color.')
   }
 }
 
@@ -157,10 +159,10 @@ const saveEdit = async (id) => {
       colors.value[index] = { ...payload, id }
     }
     editingId.value = null
-    alert('Color updated successfully!')
-  } catch (error) {
-    console.error('Error updating color:', error)
-    alert('Failed to update color.')
+    success('Color updated successfully!')
+  } catch (err) {
+    console.error('Error updating color:', err)
+    toastError('Failed to update color.')
   }
 }
 
@@ -169,10 +171,10 @@ const remove = async (id) => {
     try {
       await axios.delete(`/colors/${id}`)
       colors.value = colors.value.filter(c => c.id !== id)
-      alert('Color deleted successfully!')
-    } catch (error) {
-      console.error('Error deleting color:', error)
-      alert('Failed to delete color.')
+      success('Color deleted successfully!')
+    } catch (err) {
+      console.error('Error deleting color:', err)
+      toastError('Failed to delete color.')
     }
   }
 }

@@ -74,10 +74,12 @@ import CheckoutPaymentForm from "@/components/checkout/CheckoutPaymentForm.vue"
 import OrderSummary from "@/components/common/OrderSummary.vue"
 import { useCart } from "@/composables/useCart.js"
 import { useRouter } from "vue-router"
+import { useToast } from "@/composables/useToast.js"
 import axios from "axios"
 
 const { items, fetchCart, clearCart } = useCart()
 const router = useRouter()
+const { success, error: toastError } = useToast()
 
 const currentStep = ref("shipping")
 
@@ -121,12 +123,12 @@ const handlePlaceOrder = async () => {
     }
 
     const response = await axios.post('/orders', orderData)
-    alert("Order placed successfully! Thank you for your purchase.")
+    success("Order placed successfully! Thank you for your purchase.")
     await clearCart()
     router.push(`/orders/${response.data.order.id}`)
-  } catch (error) {
-    console.error('Error placing order:', error)
-    alert(error.response?.data?.message || "Failed to place order. Please try again.")
+  } catch (err) {
+    console.error('Error placing order:', err)
+    toastError(err.response?.data?.message || "Failed to place order. Please try again.")
   }
 }
 

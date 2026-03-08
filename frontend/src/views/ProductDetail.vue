@@ -187,6 +187,9 @@ import axios from "axios"
 import { useAuth } from "@/composables/useAuth.js"
 import { useCart } from "@/composables/useCart.js"
 import { useWishlist } from "@/composables/useWishlist.js"
+import { useToast } from "@/composables/useToast.js"
+
+const { success, error, warning } = useToast()
 
 const FILE_BASE_URL = "http://localhost:8000/api/files/"
 
@@ -448,15 +451,15 @@ const inWishlist = computed(() => {
 
 const addSelectedToCart = async () => {
   if (!isAuthenticated.value) {
-    alert("Please login to add items to cart.")
+    warning("Please login to add items to cart.")
     return
   }
   if (!selectedVariant.value) {
-    alert("Please select color and size before adding to cart.")
+    warning("Please select color and size before adding to cart.")
     return
   }
   if (currentStock.value === 0) {
-    alert("This product is out of stock.")
+    error("This product is out of stock.")
     return
   }
   await addToCart({
@@ -465,12 +468,12 @@ const addSelectedToCart = async () => {
     quantity: quantity.value,
   })
   await fetchCart()
-  alert("Added to cart successfully!")
+  success("Added to cart successfully!")
 }
 
 const toggleWishlist = async () => {
   if (!isAuthenticated.value) {
-    alert("Please login to use wishlist.")
+    warning("Please login to use wishlist.")
     return
   }
   await toggleWishlistState(product.value.id)
@@ -478,7 +481,7 @@ const toggleWishlist = async () => {
 
 const submitReview = async () => {
   if (!isAuthenticated.value) {
-    alert("Please login to write a review.")
+    warning("Please login to write a review.")
     return
   }
   try {
@@ -490,9 +493,10 @@ const submitReview = async () => {
     reviewForm.value.comment = ""
     await fetchReviews()
     await fetchProduct()
-  } catch (error) {
-    console.error("Error saving review:", error)
-    alert("Unable to submit review.")
+    success("Review submitted successfully!")
+  } catch (err) {
+    console.error("Error saving review:", err)
+    error("Unable to submit review.")
   } finally {
     savingReview.value = false
   }
