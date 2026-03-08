@@ -129,10 +129,12 @@ import { ref, onMounted } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import axios from 'axios'
 import { useCategories } from '@/composables/useCategories.js'
+import { useToast } from '@/composables/useToast.js'
 
 const route = useRoute()
 const router = useRouter()
 const { categories, fetchCategories } = useCategories()
+const { success, error: toastError, warning } = useToast()
 
 const colors = ref([])
 const sizes = ref([])
@@ -201,7 +203,7 @@ const fetchColorsAndSizes = async () => {
 
 const addVariant = () => {
   if (!newVariant.value.color_id && !newVariant.value.size_id) {
-    alert('Please select at least a color or a size')
+    warning('Please select at least a color or a size')
     return
   }
   
@@ -212,12 +214,12 @@ const addVariant = () => {
   )
   
   if (exists) {
-    alert('This variant already exists')
+    warning('This variant already exists')
     return
   }
 
   if (!newVariant.value.price || Number(newVariant.value.price) <= 0) {
-    alert('Please add a valid variant price')
+    warning('Please add a valid variant price')
     return
   }
 
@@ -267,9 +269,9 @@ onMounted(async () => {
         existing_image_paths: (v.images || []).map(img => img.path),
       }))
     }
-  } catch (error) {
-    console.error('Error fetching product:', error)
-    alert('Failed to fetch product for editing.')
+  } catch (err) {
+    console.error('Error fetching product:', err)
+    toastError('Failed to fetch product for editing.')
     router.push('/admin/products')
   }
 })
@@ -280,7 +282,7 @@ const handleSubmit = async () => {
     const saleEndUtc = toUtcISOString(product.value.sale_end)
 
     if (saleStartUtc && saleEndUtc && new Date(saleEndUtc) <= new Date(saleStartUtc)) {
-      alert('Sale end must be after sale start.')
+      warning('Sale end must be after sale start.')
       return
     }
 
@@ -320,11 +322,11 @@ const handleSubmit = async () => {
         'Content-Type': 'multipart/form-data',
       },
     })
-    alert('Product updated successfully!')
+    success('Product updated successfully!')
     router.push('/admin/products')
-  } catch (error) {
-    console.error('Error updating product:', error)
-    alert('Failed to update product.')
+  } catch (err) {
+    console.error('Error updating product:', err)
+    toastError('Failed to update product.')
   }
 }
 </script>
