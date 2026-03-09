@@ -3,9 +3,11 @@
 namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
+use App\Mail\UserRegisteredMail;
 use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Facades\Mail;
 use Illuminate\Validation\ValidationException;
 
 class AuthController extends Controller
@@ -24,6 +26,8 @@ class AuthController extends Controller
             'email' => $data['email'],
             'password' => $data['password'],
         ]);
+        // Mail::to($user->email)->queue(new UserRegisteredMail($user));
+        Mail::to($user->email)->send(new UserRegisteredMail($user));
 
         $token = $user->createToken($data['device_name'] ?? 'api')->plainTextToken;
 
