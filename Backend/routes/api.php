@@ -65,10 +65,10 @@ Route::middleware(['auth:sanctum'])->group(function () {
 });
 
 Route::middleware(['auth:sanctum', 'admin'])->group(function () {
-    Route::apiResource('products', ProductController::class);
-    Route::apiResource('categories', CategoryController::class);
-    Route::apiResource('colors', ColorController::class);
-    Route::apiResource('sizes', SizeController::class);
+    Route::apiResource('products', ProductController::class)->except(['index', 'show']);
+    Route::apiResource('categories', CategoryController::class)->except(['index', 'show']);
+    Route::apiResource('colors', ColorController::class)->except(['index', 'show']);
+    Route::apiResource('sizes', SizeController::class)->except(['index', 'show']);
     Route::get('/admin/reviews', [AdminCommerceController::class, 'reviews']);
     Route::get('/admin/wishlists', [AdminCommerceController::class, 'wishlists']);
     Route::get('/admin/carts', [AdminCommerceController::class, 'carts']);
