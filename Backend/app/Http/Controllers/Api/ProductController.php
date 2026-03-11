@@ -44,7 +44,7 @@ class ProductController extends Controller
         unset($validatedData['variants']);
 
         if ($request->hasFile('image')) {
-            $validatedData['image'] = $request->file('image')->store('products', 'public');
+            $validatedData['image'] = $this->uploadImage($request->file('image'), 'products');
         }
 
         $product = Product::create($validatedData);
@@ -125,11 +125,8 @@ class ProductController extends Controller
         unset($validatedData['sale_end']);
 
         if ($request->hasFile('image')) {
-            // Delete old image if it exists
-            if ($product->image) {
-                Storage::disk('public')->delete($product->image);
-            }
-            $validatedData['image'] = $request->file('image')->store('products', 'public');
+            $this->deleteImageIfLocal($product->image);
+            $validatedData['image'] = $this->uploadImage($request->file('image'), 'products');
         }
 
         $product->fill($validatedData);
@@ -141,7 +138,7 @@ class ProductController extends Controller
             $product->load('variants.images');
             foreach ($product->variants as $oldVariant) {
                 foreach ($oldVariant->images as $image) {
-                    Storage::disk('public')->delete($image->path);
+                    $this->deleteImageIfLocal($image->path);
                 }
             }
             $product->variants()->delete();
@@ -168,13 +165,11 @@ class ProductController extends Controller
         $product->load('variants.images');
         foreach ($product->variants as $variant) {
             foreach ($variant->images as $image) {
-                Storage::disk('public')->delete($image->path);
+                $this->deleteImageIfLocal($image->path);
             }
         }
 
-        if ($product->image) {
-            Storage::disk('public')->delete($product->image);
-        }
+        $this->deleteImageIfLocal($product->image);
 
         DB::transaction(function () use ($product) {
             foreach ($product->variants as $variant) {
@@ -209,13 +204,34 @@ class ProductController extends Controller
 
             $uploadedFiles = $request->file("variant_images.$index", []);
             foreach ($uploadedFiles as $position => $imageFile) {
-                $storedPath = $imageFile->store('product-variants', 'public');
+                $pathOrUrl = $this->uploadImage($imageFile, 'product-variants');
                 $variant->images()->create([
-                    'path' => $storedPath,
+                    'path' => $pathOrUrl,
                     'sort_order' => count($existingImagePaths) + $position,
                 ]);
             }
         }
+    }
+
+    private function uploadImage(\Illuminate\Http\UploadedFile $file, string $folder): string
+    {
+        if (env('CLOUDINARY_URL')) {
+            $result = cloudinary()->uploadApi()->upload($file->getRealPath(), [
+                'folder' => 'e-store/' . $folder,
+            ]);
+
+            return $result['secure_url'] ?? $result['url'];
+        }
+
+        return $file->store($folder, 'public');
+    }
+
+    private function deleteImageIfLocal(?string $path): void
+    {
+        if (! $path || str_starts_with($path, 'http')) {
+            return;
+        }
+        Storage::disk('public')->delete($path);
     }
 
     private function validateVariantsPayload(array $variants): void

@@ -152,6 +152,7 @@
 <script setup>
 import { computed, ref, onMounted } from "vue"
 import axios from "axios"
+import { getImageUrl } from "@/utils/imageUrl"
 
 const props = defineProps({
   title: {
@@ -188,7 +189,7 @@ const fetchProducts = async () => {
     // Transform backend data to frontend structure
     products.value = response.data.map(p => ({
       ...p,
-      image: p.image ? `http://localhost:8000/api/files/${p.image}` : 'https://via.placeholder.com/300x400',
+      image: getImageUrl(p.image),
       rating: Number(p.reviews_avg_rating || 0),
       reviews: Number(p.reviews_count || 0),
       displayPrice: Number(p.final_price || p.min_variant_price || 0) || null,

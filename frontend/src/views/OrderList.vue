@@ -68,6 +68,7 @@
 import { ref, onMounted } from 'vue'
 import axios from 'axios'
 import { useRouter } from 'vue-router'
+import { getImageUrl } from '@/utils/imageUrl'
 
 const orders = ref([])
 const loading = ref(true)
@@ -107,9 +108,7 @@ const getStatusBadgeClass = (status) => {
 
 const capitalize = (s) => s.charAt(0).toUpperCase() + s.slice(1)
 
-const getDisplayImage = (path) => {
-  return path ? `http://localhost:8000/api/files/${path}` : 'https://via.placeholder.com/100x120'
-}
+const getDisplayImage = (path) => getImageUrl(path, 'https://via.placeholder.com/100x120')
 
 const viewOrder = (orderId) => {
   router.push(`/orders/${orderId}`)

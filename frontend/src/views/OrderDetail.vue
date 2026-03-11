@@ -121,6 +121,7 @@
 import { ref, onMounted } from 'vue'
 import axios from 'axios'
 import { useRoute } from 'vue-router'
+import { getImageUrl } from '@/utils/imageUrl'
 
 const route = useRoute()
 const order = ref(null)
@@ -145,9 +146,7 @@ const fetchOrder = async () => {
   }
 }
 
-const getDisplayImage = (path) => {
-  return path ? `http://localhost:8000/api/files/${path}` : 'https://via.placeholder.com/300x400'
-}
+const getDisplayImage = (path) => getImageUrl(path)
 
 const getPaymentIcon = (method) => {
   switch (method) {
