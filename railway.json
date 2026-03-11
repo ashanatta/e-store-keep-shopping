@@ -1,9 +1,6 @@
 {
   "build": {
-    "builder": "NIXPACKS",
-    "buildCommand": "cd Backend && composer install --no-dev --optimize-autoloader && php artisan storage:link && php artisan config:cache && php artisan route:cache && php artisan view:cache"
-  },
-  "deploy": {
-    "startCommand": "cd Backend && php artisan migrate --force && php artisan serve --host=0.0.0.0 --port=$PORT"
+    "builder": "DOCKERFILE",
+    "dockerfilePath": "Dockerfile"
   }
 }
