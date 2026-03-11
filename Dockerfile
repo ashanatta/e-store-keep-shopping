@@ -43,6 +43,6 @@ RUN echo 'server { \
 
 EXPOSE 80
 
-CMD php artisan migrate --force \
-    && php-fpm -D \
-    && nginx -g "daemon off;"
+RUN printf '%s\n' '#!/bin/sh' 'set -e' 'php artisan migrate --force' 'php-fpm -D' 'exec nginx -g "daemon off;"' > /start.sh && chmod +x /start.sh
+
+CMD ["/start.sh"]
