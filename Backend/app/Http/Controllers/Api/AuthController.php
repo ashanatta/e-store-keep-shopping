@@ -7,6 +7,7 @@ use App\Mail\UserRegisteredMail;
 use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Mail;
 use Illuminate\Validation\ValidationException;
 
@@ -26,8 +27,15 @@ class AuthController extends Controller
             'email' => $data['email'],
             'password' => $data['password'],
         ]);
-        // Mail::to($user->email)->queue(new UserRegisteredMail($user));
-        Mail::to($user->email)->send(new UserRegisteredMail($user));
+
+        try {
+            Mail::to($user->email)->send(new UserRegisteredMail($user));
+        } catch (\Throwable $e) {
+            Log::warning('Registration welcome email failed: ' . $e->getMessage(), [
+                'user_id' => $user->id,
+                'email' => $user->email,
+            ]);
+        }
 
         $token = $user->createToken($data['device_name'] ?? 'api')->plainTextToken;
 
