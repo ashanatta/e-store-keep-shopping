@@ -191,12 +191,9 @@ import { useToast } from "@/composables/useToast.js"
 
 const { success, error, warning } = useToast()
 
-const FILE_BASE_URL = "http://localhost:8000/api/files/"
+import { getImageUrl } from "@/utils/imageUrl"
 
-const buildFileUrl = (path) => {
-  if (!path) return ""
-  return `${FILE_BASE_URL}${encodeURI(path)}`
-}
+const buildFileUrl = (path) => getImageUrl(path) || ""
 
 const route = useRoute()
 const { isAuthenticated, user } = useAuth()

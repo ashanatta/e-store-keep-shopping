@@ -20,7 +20,7 @@
         <tbody>
           <tr v-for="product in products" :key="product.id">
             <td>{{ product.id }}</td>
-            <td><img :src="`http://localhost:8000/api/files/${product.image}`" alt="Product Image" style="width: 50px; height: 50px; object-fit: cover;"></td>
+            <td><img :src="getImageUrl(product.image)" alt="Product Image" style="width: 50px; height: 50px; object-fit: cover;"></td>
             <td>{{ product.name }}</td>
             <td>{{ product.category?.name || '-' }}</td>
             <td>
@@ -46,6 +46,7 @@
 <script setup>
 import { ref, onMounted } from 'vue'
 import axios from 'axios'
+import { getImageUrl } from '@/utils/imageUrl'
 
 const products = ref([])
 

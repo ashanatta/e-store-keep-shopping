@@ -1,6 +1,7 @@
 import { computed, reactive } from "vue"
 import axios from "axios"
 import { useAuth } from "@/composables/useAuth"
+import { getImageUrl } from "@/utils/imageUrl"
 
 const state = reactive({
   items: [],
@@ -8,10 +9,7 @@ const state = reactive({
   initialized: false,
 })
 
-const getDisplayImage = (item) => {
-  const path = item?.product?.image
-  return path ? `http://localhost:8000/api/files/${path}` : "https://via.placeholder.com/300x400"
-}
+const getDisplayImage = (item) => getImageUrl(item?.product?.image)
 
 const normalizeItem = (item) => {
   const variant = item.variant || null

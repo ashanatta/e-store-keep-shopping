@@ -39,7 +39,7 @@
         <input type="file" class="form-control" id="image" @change="handleImageChange" accept="image/*">
         <div v-if="product.image" class="mt-2">
           <p>Current Image:</p>
-          <img :src="`http://localhost:8000/api/files/${product.image}`" alt="Current Product Image" style="width: 100px; height: 100px; object-fit: cover;">
+          <img :src="getImageUrl(product.image)" alt="Current Product Image" style="width: 100px; height: 100px; object-fit: cover;">
         </div>
       </div>
 
@@ -104,7 +104,7 @@
                   <img
                     v-for="(path, imgIndex) in variant.existing_image_paths"
                     :key="`${index}-${imgIndex}`"
-                    :src="`http://localhost:8000/api/files/${path}`"
+                    :src="getImageUrl(path)"
                     alt="Variant"
                     style="width: 28px; height: 28px; object-fit: cover; border-radius: 4px;"
                   />
@@ -130,6 +130,7 @@ import { useRoute, useRouter } from 'vue-router'
 import axios from 'axios'
 import { useCategories } from '@/composables/useCategories.js'
 import { useToast } from '@/composables/useToast.js'
+import { getImageUrl } from '@/utils/imageUrl'
 
 const route = useRoute()
 const router = useRouter()

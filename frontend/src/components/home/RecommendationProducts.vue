@@ -52,6 +52,7 @@
 
 <script>
 import axios from 'axios'
+import { getImageUrl } from '@/utils/imageUrl'
 
 export default {
   name: "RecommendationProducts",
@@ -69,7 +70,7 @@ export default {
         // Take random 4 products or specific ones
         this.products = response.data.slice(0, 4).map(p => ({
           ...p,
-          image: p.image ? `http://localhost:8000/api/files/${p.image}` : 'https://via.placeholder.com/300x400',
+          image: getImageUrl(p.image),
           displayPrice: Number(p.final_price || p.min_variant_price || 0) || null,
           originalPrice: Boolean(p.is_on_sale) ? (Number(p.min_variant_price || 0) || null) : null,
           rating: Number(p.reviews_avg_rating || 0),
