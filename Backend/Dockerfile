@@ -1,3 +1,4 @@
+# NGINX + PHP-FPM (no Apache). Use this when Railway Root Directory = Backend.
 FROM php:8.2-fpm
 
 RUN apt-get update && apt-get install -y \
@@ -15,31 +16,17 @@ COPY --from=composer:latest /usr/bin/composer /usr/bin/composer
 
 WORKDIR /var/www/html
 
-COPY Backend/composer.json Backend/composer.lock ./
+COPY composer.json composer.lock ./
 RUN composer install --no-dev --optimize-autoloader --no-scripts
 
-COPY Backend/ .
+COPY . .
 RUN composer dump-autoload --optimize
 
 RUN chmod -R 775 storage bootstrap/cache \
     && mkdir -p storage/logs storage/framework/cache storage/framework/sessions storage/framework/views \
     && chown -R www-data:www-data storage bootstrap/cache
 
-# Nginx: serve Laravel public/ and pass PHP to FPM
-RUN echo 'server { \
-    listen 80 default_server; \
-    root /var/www/html/public; \
-    index index.php; \
-    location / { \
-        try_files $uri $uri/ /index.php?$query_string; \
-    } \
-    location ~ \.php$ { \
-        fastcgi_pass 127.0.0.1:9000; \
-        fastcgi_param SCRIPT_FILENAME $document_root$fastcgi_script_name; \
-        include fastcgi_params; \
-        fastcgi_read_timeout 300; \
-    } \
-}' > /etc/nginx/sites-available/default
+RUN echo 'server { listen 80 default_server; root /var/www/html/public; index index.php; location / { try_files $uri $uri/ /index.php?$query_string; } location ~ \.php$ { fastcgi_pass 127.0.0.1:9000; fastcgi_param SCRIPT_FILENAME $document_root$fastcgi_script_name; include fastcgi_params; fastcgi_read_timeout 300; } }' > /etc/nginx/sites-available/default
 
 EXPOSE 80
 
