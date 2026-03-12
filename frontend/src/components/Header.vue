@@ -75,6 +75,9 @@
                   <li>
                     <router-link to="/orders" class="dropdown-item">My Orders</router-link>
                   </li>
+                  <li>
+                    <router-link to="/profile" class="dropdown-item">My Profile</router-link>
+                  </li>
                   <li><hr class="dropdown-divider"></li>
                   <li>
                     <button class="dropdown-item text-danger" @click="handleLogout">Logout</button>
