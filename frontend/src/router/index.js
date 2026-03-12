@@ -1,5 +1,6 @@
 // src/router/index.js
 import { createRouter, createWebHistory } from 'vue-router'
+import { useAuth } from '@/composables/useAuth.js'
 
 // Import your components
 import Home from '../views/Home.vue'
