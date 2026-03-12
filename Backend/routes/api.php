@@ -12,6 +12,7 @@ use App\Http\Controllers\Api\WishlistController;
 use App\Http\Controllers\Api\CartController;
 use App\Http\Controllers\Api\OrderController;
 use App\Http\Controllers\Api\AdminCommerceController;
+use App\Http\Controllers\Api\BannerController;
 use Illuminate\Support\Facades\Route;
 use Illuminate\Support\Facades\Storage;
 
@@ -24,6 +25,7 @@ Route::post('/logout', [AuthController::class, 'logout'])->middleware('auth:sanc
 Route::post('/logout-all', [AuthController::class, 'logoutAll'])->middleware('auth:sanctum');
 
 // Public catalog endpoints
+Route::get('/banners', [BannerController::class, 'index']);
 Route::get('/products', [ProductController::class, 'index']);
 Route::get('/products/{product}', [ProductController::class, 'show']);
 Route::get('/products/{product}/reviews', [ReviewController::class, 'index']);
@@ -76,4 +78,9 @@ Route::middleware(['auth:sanctum', 'admin'])->group(function () {
     Route::get('/admin/orders', [AdminCommerceController::class, 'orders']);
     Route::patch('/admin/orders/{order}/status', [AdminCommerceController::class, 'updateOrderStatus']);
     Route::get('/admin/stats', [AdminCommerceController::class, 'stats']);
+    Route::get('/admin/banners', [BannerController::class, 'index']);
+    Route::post('/banners', [BannerController::class, 'store']);
+    Route::post('/banners/{banner}', [BannerController::class, 'update']);  // POST with _method=PUT for FormData
+    Route::put('/banners/{banner}', [BannerController::class, 'update']);
+    Route::delete('/banners/{banner}', [BannerController::class, 'destroy']);
 });
