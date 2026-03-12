@@ -16,10 +16,6 @@ use App\Http\Controllers\Api\BannerController;
 use Illuminate\Support\Facades\Route;
 use Illuminate\Support\Facades\Storage;
 
-Route::get('/user', [UserController::class, 'me'])->middleware('auth:sanctum');
-Route::put('/user', [UserController::class, 'update'])->middleware('auth:sanctum');
-
-Route::post('/register', [AuthController::class, 'register']);
 Route::post('/login', [AuthController::class, 'login']);
 Route::post('/logout', [AuthController::class, 'logout'])->middleware('auth:sanctum');
 Route::post('/logout-all', [AuthController::class, 'logoutAll'])->middleware('auth:sanctum');
