@@ -121,7 +121,7 @@
                   <div class="rating small text-muted mb-2">
                     <span class="text-warning">{{ renderStars(product.rating) }}</span> {{ product.rating.toFixed(1) }} ({{ product.reviews }})
                   </div>
-                  
+
                   <div>
                     <template v-if="product.displayPrice !== null">
                       <span class="fw-bold">${{ product.displayPrice.toFixed(2) }}</span>
@@ -138,7 +138,7 @@
               </div>
             </div>
           </div>
-
+          
           <div v-if="sortedProducts.length === 0" class="col-12">
             <div class="empty-state text-center p-5">
               No products match your filters.

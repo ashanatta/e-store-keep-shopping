@@ -75,8 +75,8 @@ Route::middleware(['auth:sanctum', 'admin'])->group(function () {
     Route::patch('/admin/orders/{order}/status', [AdminCommerceController::class, 'updateOrderStatus']);
     Route::get('/admin/stats', [AdminCommerceController::class, 'stats']);
     Route::get('/admin/banners', [BannerController::class, 'index']);
-    Route::post('/banners', [BannerController::class, 'store']);
-    Route::post('/banners/{banner}', [BannerController::class, 'update']);  // POST with _method=PUT for FormData
-    Route::put('/banners/{banner}', [BannerController::class, 'update']);
-    Route::delete('/banners/{banner}', [BannerController::class, 'destroy']);
+    Route::post('admin/banners', [BannerController::class, 'store']);
+    Route::post('admin/banners/{banner}', [BannerController::class, 'update']);  // POST with _method=PUT for FormData
+    Route::put('admin/banners/{banner}', [BannerController::class, 'update']);
+    Route::delete('admin/banners/{banner}', [BannerController::class, 'destroy']);
 });
