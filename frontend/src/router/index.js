@@ -16,6 +16,7 @@ import Sales from '@/views/Sales.vue'
 import About from '@/views/About.vue'
 import Login from '@/views/Login.vue'
 import Register from '@/views/Register.vue'
+import Profile from '@/views/Profile.vue'
 import AdminLayout from '@/views/admin/AdminLayout.vue'
 import AdminDashboard from '@/views/admin/AdminDashboard.vue'
 import ProductList from '@/views/admin/ProductList.vue'
@@ -64,7 +65,10 @@ const routes = [
       { path: 'carts', name: 'AdminCarts', component: CartList },
       { path: 'orders', name: 'AdminOrders', component: AdminOrderList },
     ],
-    meta: { requiresAuth: true, requiresAdmin: true } // Add meta fields for auth/admin checks
+    meta: { requiresAuth: true, requiresAdmin: true }
+  }
+]
+
 // Create router
 const router = createRouter({
   history: createWebHistory(),
