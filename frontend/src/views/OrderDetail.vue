@@ -32,12 +32,12 @@
             <tr v-for="item in order.items" :key="item.id">
               <td>{{ item.product_name || item.product?.name }}</td>
               <td>{{ item.quantity }}</td>
-              <td>${{ (item.price * item.quantity).toFixed(2) }}</td>
+              <td>${{ ((parseFloat(item.price) || 0) * (item.quantity || 0)).toFixed(2) }}</td>
             </tr>
           </tbody>
         </table>
         <div class="text-end">
-          <p class="mb-0"><strong>Total: ${{ order.total?.toFixed(2) }}</strong></p>
+          <p class="mb-0"><strong>Total: ${{ (parseFloat(order.total) || 0).toFixed(2) }}</strong></p>
         </div>
       </div>
     </div>

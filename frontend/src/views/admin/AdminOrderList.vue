@@ -21,7 +21,7 @@
               <td>{{ order.id }}</td>
               <td>{{ order.order_number }}</td>
               <td>{{ order.user?.name || "-" }}<br><small class="text-muted">{{ order.user?.email }}</small></td>
-              <td>${{ order.total?.toFixed(2) }}</td>
+              <td>${{ (parseFloat(order.total) || 0).toFixed(2) }}</td>
               <td>
                 <select
                   v-model="order.status"
