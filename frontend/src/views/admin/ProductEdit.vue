@@ -74,8 +74,11 @@
               <label class="form-label small">Variant Images</label>
               <input type="file" class="form-control form-control-sm" accept="image/*" multiple @change="handleVariantImageChange">
             </div>
-            <div class="col-md-2">
-              <button type="button" class="btn btn-sm btn-success w-100" @click="addVariant">Add</button>
+            <div class="col-md-2 d-flex flex-column gap-1">
+              <button type="button" class="btn btn-sm btn-success w-100" @click="saveVariant">
+                {{ editingIndex !== null ? 'Update' : 'Add' }}
+              </button>
+              <button v-if="editingIndex !== null" type="button" class="btn btn-sm btn-secondary w-100" @click="cancelEdit">Cancel</button>
             </div>
           </div>
         </div>
@@ -93,7 +96,7 @@
             </tr>
           </thead>
           <tbody>
-            <tr v-for="(variant, index) in variants" :key="index">
+            <tr v-for="(variant, index) in variants" :key="index" :class="{ 'table-warning': editingIndex === index }">
               <td>{{ getColorName(variant.color_id) }}</td>
               <td>{{ getSizeName(variant.size_id) }}</td>
               <td>{{ variant.stock }}</td>
@@ -111,7 +114,10 @@
                 </div>
               </td>
               <td>
-                <button type="button" class="btn btn-sm btn-danger" @click="removeVariant(index)">Remove</button>
+                <div class="d-flex gap-1">
+                  <button type="button" class="btn btn-sm btn-warning" @click="editVariant(index)">Edit</button>
+                  <button type="button" class="btn btn-sm btn-danger" @click="removeVariant(index)">Remove</button>
+                </div>
               </td>
             </tr>
           </tbody>
@@ -141,6 +147,7 @@ const colors = ref([])
 const sizes = ref([])
 const variants = ref([])
 const newVariantImages = ref([])
+const editingIndex = ref(null)
 const newVariant = ref({
   color_id: '',
   size_id: '',
@@ -202,20 +209,9 @@ const fetchColorsAndSizes = async () => {
   }
 }
 
-const addVariant = () => {
+const saveVariant = () => {
   if (!newVariant.value.color_id && !newVariant.value.size_id) {
     warning('Please select at least a color or a size')
-    return
-  }
-  
-  // Check if variant already exists
-  const exists = variants.value.some(v => 
-    v.color_id === newVariant.value.color_id && 
-    v.size_id === newVariant.value.size_id
-  )
-  
-  if (exists) {
-    warning('This variant already exists')
     return
   }
 
@@ -224,23 +220,59 @@ const addVariant = () => {
     return
   }
 
-  variants.value.push({
-    ...newVariant.value,
-    imageFiles: [...newVariantImages.value],
-    existing_image_paths: [],
-  })
-  
-  // Reset new variant form
+  if (editingIndex.value !== null) {
+    // Update existing variant
+    const existing = variants.value[editingIndex.value]
+    variants.value[editingIndex.value] = {
+      ...existing,
+      color_id: newVariant.value.color_id,
+      size_id: newVariant.value.size_id,
+      stock: newVariant.value.stock,
+      price: newVariant.value.price,
+      imageFiles: newVariantImages.value.length > 0 ? [...newVariantImages.value] : existing.imageFiles,
+    }
+    editingIndex.value = null
+  } else {
+    // Check if variant already exists (only for new additions)
+    const exists = variants.value.some(v =>
+      v.color_id === newVariant.value.color_id &&
+      v.size_id === newVariant.value.size_id
+    )
+    if (exists) {
+      warning('This variant already exists')
+      return
+    }
+    variants.value.push({
+      ...newVariant.value,
+      imageFiles: [...newVariantImages.value],
+      existing_image_paths: [],
+    })
+  }
+
+  newVariant.value = { color_id: '', size_id: '', stock: 0, price: '' }
+  newVariantImages.value = []
+}
+
+const editVariant = (index) => {
+  const v = variants.value[index]
+  editingIndex.value = index
   newVariant.value = {
-    color_id: '',
-    size_id: '',
-    stock: 0,
-    price: ''
+    color_id: v.color_id,
+    size_id: v.size_id,
+    stock: v.stock,
+    price: v.price,
   }
   newVariantImages.value = []
 }
 
+const cancelEdit = () => {
+  editingIndex.value = null
+  newVariant.value = { color_id: '', size_id: '', stock: 0, price: '' }
+  newVariantImages.value = []
+}
+
 const removeVariant = (index) => {
+  if (editingIndex.value === index) cancelEdit()
   variants.value.splice(index, 1)
 }
 

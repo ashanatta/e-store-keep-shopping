@@ -17,6 +17,7 @@ import About from '@/views/About.vue'
 import Login from '@/views/Login.vue'
 import Register from '@/views/Register.vue'
 import AdminLayout from '@/views/admin/AdminLayout.vue'
+import AdminDashboard from '@/views/admin/AdminDashboard.vue'
 import ProductList from '@/views/admin/ProductList.vue'
 import ProductCreate from '@/views/admin/ProductCreate.vue'
 import ProductEdit from '@/views/admin/ProductEdit.vue'
@@ -27,6 +28,7 @@ import ReviewList from '@/views/admin/ReviewList.vue'
 import WishlistList from '@/views/admin/WishlistList.vue'
 import CartList from '@/views/admin/CartList.vue'
 import AdminOrderList from '@/views/admin/AdminOrderList.vue'
+import Profile from '@/views/Profile.vue'
 import { useAuth } from '@/composables/useAuth'
 
 // Define routes
@@ -45,12 +47,14 @@ const routes = [
   { path: '/about', name: 'About', component: About },
   { path: '/login', name: 'Login', component: Login },
   { path: '/register', name: 'Register', component: Register },
+  { path: '/profile', name: 'Profile', component: Profile, meta: { requiresAuth: true } },
   {
     path: '/admin',
     name: 'Admin',
     component: AdminLayout,
-    redirect: '/admin/products', // Redirect /admin to /admin/products
+    redirect: '/admin/dashboard',
     children: [
+      { path: 'dashboard', name: 'AdminDashboard', component: AdminDashboard },
       { path: 'products', name: 'AdminProducts', component: ProductList },
       { path: 'products/create', name: 'AdminProductCreate', component: ProductCreate },
       { path: 'products/:id/edit', name: 'AdminProductEdit', component: ProductEdit },

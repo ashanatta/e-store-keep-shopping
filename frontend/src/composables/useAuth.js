@@ -74,6 +74,15 @@ async function logout() {
   }
 }
 
+async function refreshUser() {
+  try {
+    const response = await axios.get("/user")
+    setUser(response.data)
+  } catch (e) {
+    // ignore
+  }
+}
+
 export function useAuth() {
   return {
     user: computed(() => state.user),
@@ -82,7 +91,8 @@ export function useAuth() {
     isAdmin: computed(() => state.isAdmin),
     login,
     register,
-    logout
+    logout,
+    refreshUser,
   }
 }
 

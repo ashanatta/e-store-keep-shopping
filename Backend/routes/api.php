@@ -16,6 +16,7 @@ use Illuminate\Support\Facades\Route;
 use Illuminate\Support\Facades\Storage;
 
 Route::get('/user', [UserController::class, 'me'])->middleware('auth:sanctum');
+Route::put('/user', [UserController::class, 'update'])->middleware('auth:sanctum');
 
 Route::post('/register', [AuthController::class, 'register']);
 Route::post('/login', [AuthController::class, 'login']);
@@ -74,4 +75,5 @@ Route::middleware(['auth:sanctum', 'admin'])->group(function () {
     Route::get('/admin/carts', [AdminCommerceController::class, 'carts']);
     Route::get('/admin/orders', [AdminCommerceController::class, 'orders']);
     Route::patch('/admin/orders/{order}/status', [AdminCommerceController::class, 'updateOrderStatus']);
+    Route::get('/admin/stats', [AdminCommerceController::class, 'stats']);
 });

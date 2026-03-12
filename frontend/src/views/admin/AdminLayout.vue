@@ -6,14 +6,15 @@
       </div>
       <nav class="sidebar-nav">
         <ul>
-          <li><router-link to="/admin/products">Products</router-link></li>
-          <li><router-link to="/admin/categories">Categories</router-link></li>
-          <li><router-link to="/admin/colors">Colors</router-link></li>
-          <li><router-link to="/admin/sizes">Sizes</router-link></li>
-          <li><router-link to="/admin/reviews">Reviews</router-link></li>
-          <li><router-link to="/admin/wishlists">Wishlists</router-link></li>
-          <li><router-link to="/admin/carts">Carts</router-link></li>
-          <li><router-link to="/admin/orders">Orders</router-link></li>
+          <li><router-link to="/admin/dashboard"><i class="bi bi-speedometer2 me-2"></i>Dashboard</router-link></li>
+          <li><router-link to="/admin/products"><i class="bi bi-box-seam me-2"></i>Products</router-link></li>
+          <li><router-link to="/admin/categories"><i class="bi bi-tags me-2"></i>Categories</router-link></li>
+          <li><router-link to="/admin/colors"><i class="bi bi-palette me-2"></i>Colors</router-link></li>
+          <li><router-link to="/admin/sizes"><i class="bi bi-rulers me-2"></i>Sizes</router-link></li>
+          <li><router-link to="/admin/reviews"><i class="bi bi-star me-2"></i>Reviews</router-link></li>
+          <li><router-link to="/admin/wishlists"><i class="bi bi-heart me-2"></i>Wishlists</router-link></li>
+          <li><router-link to="/admin/carts"><i class="bi bi-cart me-2"></i>Carts</router-link></li>
+          <li><router-link to="/admin/orders"><i class="bi bi-bag me-2"></i>Orders</router-link></li>
         </ul>
       </nav>
     </aside>
