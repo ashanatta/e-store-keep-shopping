@@ -28,8 +28,6 @@ import ReviewList from '@/views/admin/ReviewList.vue'
 import WishlistList from '@/views/admin/WishlistList.vue'
 import CartList from '@/views/admin/CartList.vue'
 import AdminOrderList from '@/views/admin/AdminOrderList.vue'
-import Profile from '@/views/Profile.vue'
-import { useAuth } from '@/composables/useAuth'
 
 // Define routes
 const routes = [
@@ -67,9 +65,6 @@ const routes = [
       { path: 'orders', name: 'AdminOrders', component: AdminOrderList },
     ],
     meta: { requiresAuth: true, requiresAdmin: true } // Add meta fields for auth/admin checks
-  }
-]
-
 // Create router
 const router = createRouter({
   history: createWebHistory(),

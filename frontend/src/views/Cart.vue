@@ -25,14 +25,8 @@
       </div>
       <div class="col-lg-4">
         <OrderSummary :items="items">
-          <router-link 
-            to="/checkout" 
-            class="btn btn-dark w-100 mt-3 py-3 rounded-pill fw-semibold" 
-            :class="{ disabled: !isAuthenticated || items.length === 0 }"
-          >
-            Proceed to Checkout
-          </router-link>
-          <router-link to="/shop" class="btn btn-outline-dark w-100 mt-2 py-3 rounded-pill fw-semibold">Continue Shopping</router-link>
+          <button class="btn btn-dark w-100 mt-3" :disabled="!isAuthenticated || items.length === 0">Proceed to Checkout</button>
+          <router-link to="/shop" class="btn btn-outline-dark w-100 mt-2">Continue Shopping</router-link>
           <div class="summary-benefits mt-4">
             <div class="d-flex align-items-center gap-2 mb-2">
               <i class="bi bi-shield-check text-success"></i>

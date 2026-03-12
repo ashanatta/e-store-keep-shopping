@@ -15,7 +15,6 @@
           <li><router-link to="/admin/wishlists"><i class="bi bi-heart me-2"></i>Wishlists</router-link></li>
           <li><router-link to="/admin/carts"><i class="bi bi-cart me-2"></i>Carts</router-link></li>
           <li><router-link to="/admin/orders"><i class="bi bi-bag me-2"></i>Orders</router-link></li>
-        </ul>
       </nav>
     </aside>
     <main class="admin-content">
