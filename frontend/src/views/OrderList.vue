@@ -17,7 +17,7 @@
           <span class="ms-2 badge" :class="statusBadgeClass(order.status)">{{ order.status }}</span>
         </div>
         <div class="text-muted small">
-          {{ formatDate(order.created_at) }} · ${{ order.total?.toFixed(2) }}
+          {{ formatDate(order.created_at) }} · ${{ (parseFloat(order.total) || 0).toFixed(2) }}
         </div>
       </router-link>
     </div>
