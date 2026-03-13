@@ -25,7 +25,13 @@
       </div>
       <div class="col-lg-4">
         <OrderSummary :items="items">
-          <button class="btn btn-dark w-100 mt-3" :disabled="!isAuthenticated || items.length === 0">Proceed to Checkout</button>
+          <button
+            class="btn btn-dark w-100 mt-3"
+            :disabled="!isAuthenticated || items.length === 0"
+            @click="handleCheckout"
+          >
+            Proceed to Checkout
+          </button>
           <router-link to="/shop" class="btn btn-outline-dark w-100 mt-2">Continue Shopping</router-link>
           <div class="summary-benefits mt-4">
             <div class="d-flex align-items-center gap-2 mb-2">
@@ -49,13 +55,19 @@
 
 <script setup>
 import { onMounted } from "vue"
+import { useRouter } from "vue-router"
 import CartItem from "@/components/cart/CartItem.vue"
 import OrderSummary from "@/components/common/OrderSummary.vue"
 import { useCart } from "@/composables/useCart.js"
 import { useAuth } from "@/composables/useAuth.js"
 
+const router = useRouter()
 const { isAuthenticated } = useAuth()
 const { items, count, fetchCart, updateQuantity, removeItem, clearCart } = useCart()
+
+const handleCheckout = () => {
+  router.push("/checkout")
+}
 
 const increaseQty = async (id) => {
   const item = items.value.find((cartItem) => cartItem.id === id)
