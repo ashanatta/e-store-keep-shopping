@@ -9,7 +9,7 @@
           <p>
             Discover the latest trends in fashion. Up to 50% off on selected items.
           </p>
-          <button class="shop-btn">Shop Now →</button>
+          <router-link to="/shop" class="shop-btn text-decoration-none d-inline-block">Shop Now →</router-link>
         </div>
       </div>
     </section>

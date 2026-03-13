@@ -9,40 +9,42 @@
         :key="product.id"
       >
         <div class="card h-100">
-          <img :src="product.image" class="card-img-top" alt="product" />
+          <router-link :to="`/product/${product.id}`" class="text-decoration-none">
+            <img :src="product.image" class="card-img-top" alt="product" />
 
-          <div class="card-body">
-            <h6 class="card-title">{{ product.name }}</h6>
+            <div class="card-body">
+              <h6 class="card-title text-dark">{{ product.name }}</h6>
 
-            <!-- Price Section -->
-            <p class="card-text">
-              <span class="fw-bold text-dark">
-                <template v-if="product.displayPrice !== null">Rs. {{ product.displayPrice.toFixed(2) }}</template>
-                <template v-else>Select options</template>
-              </span>
+              <!-- Price Section -->
+              <p class="card-text">
+                <span class="fw-bold text-dark">
+                  <template v-if="product.displayPrice !== null">Rs. {{ product.displayPrice.toFixed(2) }}</template>
+                  <template v-else>Select options</template>
+                </span>
 
-              <span
-                v-if="product.originalPrice && product.displayPrice !== product.originalPrice"
-                class="text-muted text-decoration-line-through ms-2"
-              >
-                Rs. {{ product.originalPrice.toFixed(2) }}
-              </span>
-            </p>
+                <span
+                  v-if="product.originalPrice && product.displayPrice !== product.originalPrice"
+                  class="text-muted text-decoration-line-through ms-2"
+                >
+                  Rs. {{ product.originalPrice.toFixed(2) }}
+                </span>
+              </p>
 
-            <!-- Rating -->
-            <p class="text-warning mb-1">
-              <span class="text-warning">{{ renderStars(product.rating) }}</span> {{ product.rating.toFixed(1) }} ({{ product.reviews }} reviews)
-            </p>
+              <!-- Rating -->
+              <p class="text-warning mb-1">
+                <span class="text-warning">{{ renderStars(product.rating) }}</span> {{ product.rating.toFixed(1) }} ({{ product.reviews }} reviews)
+              </p>
 
-          </div>
+            </div>
+          </router-link>
 
-          <div class="card-footer text-center">
-            <button
-              class="btn btn-primary btn-sm"
-              @click="addToCart(product)"
+          <div class="card-footer text-center bg-transparent border-0 pb-3">
+            <router-link
+              :to="`/product/${product.id}`"
+              class="btn btn-dark btn-sm w-100 rounded-pill"
             >
-              Add to Cart
-            </button>
+              View Product
+            </router-link>
           </div>
         </div>
       </div>

@@ -1,62 +1,106 @@
 <template>
   <div class="form-card p-4">
     <h5 class="fw-semibold mb-4">Payment Method</h5>
-    <div class="payment-option selected">
+    <div
+      class="payment-option"
+      :class="{ selected: modelValue.method === 'card' }"
+      @click="modelValue.method = 'card'"
+    >
       <div class="d-flex align-items-center gap-2">
-        <input type="radio" checked />
+        <input type="radio" :checked="modelValue.method === 'card'" />
         <i class="bi bi-credit-card"></i>
         <span>Credit/Debit Card</span>
       </div>
     </div>
-    <div class="payment-option">
+    <div
+      class="payment-option"
+      :class="{ selected: modelValue.method === 'stripe' }"
+      @click="modelValue.method = 'stripe'"
+    >
       <div class="d-flex align-items-center gap-2">
-        <input type="radio" />
+        <input type="radio" :checked="modelValue.method === 'stripe'" />
         <i class="bi bi-stripe"></i>
         <span>Stripe</span>
       </div>
     </div>
-    <div class="payment-option">
+    <div
+      class="payment-option"
+      :class="{ selected: modelValue.method === 'paypal' }"
+      @click="modelValue.method = 'paypal'"
+    >
       <div class="d-flex align-items-center gap-2">
-        <input type="radio" />
+        <input type="radio" :checked="modelValue.method === 'paypal'" />
         <i class="bi bi-paypal"></i>
         <span>PayPal</span>
       </div>
     </div>
-    <div class="payment-option">
+    <div
+      class="payment-option"
+      :class="{ selected: modelValue.method === 'cod' }"
+      @click="modelValue.method = 'cod'"
+    >
       <div class="d-flex align-items-center gap-2">
-        <input type="radio" />
+        <input type="radio" :checked="modelValue.method === 'cod'" />
         <i class="bi bi-box"></i>
         <span>Cash on Delivery</span>
       </div>
     </div>
 
-    <div class="row g-3 mt-3">
+    <div v-if="modelValue.method === 'card'" class="row g-3 mt-3">
       <div class="col-12">
         <label class="form-label small">Card Number</label>
-        <input type="text" class="form-control form-control-lg" placeholder="1234 5678 9012 3456" />
+        <input
+          v-model="modelValue.cardNumber"
+          type="text"
+          class="form-control form-control-lg"
+          placeholder="1234 5678 9012 3456"
+        />
       </div>
       <div class="col-12">
         <label class="form-label small">Name on Card</label>
-        <input type="text" class="form-control form-control-lg" />
+        <input
+          v-model="modelValue.cardName"
+          type="text"
+          class="form-control form-control-lg"
+        />
       </div>
       <div class="col-md-6">
         <label class="form-label small">Expiry Date</label>
-        <input type="text" class="form-control form-control-lg" placeholder="MM/YY" />
+        <input
+          v-model="modelValue.expiry"
+          type="text"
+          class="form-control form-control-lg"
+          placeholder="MM/YY"
+        />
       </div>
       <div class="col-md-6">
         <label class="form-label small">CVV</label>
-        <input type="text" class="form-control form-control-lg" placeholder="123" />
+        <input
+          v-model="modelValue.cvv"
+          type="text"
+          class="form-control form-control-lg"
+          placeholder="123"
+        />
       </div>
     </div>
 
     <div class="d-flex gap-3 mt-4">
-      <button class="btn btn-outline-dark flex-grow-1">Back</button>
-      <button class="btn btn-dark flex-grow-1">Review Order</button>
+      <button class="btn btn-outline-dark flex-grow-1" @click="$emit('back')">Back</button>
+      <button class="btn btn-dark flex-grow-1" @click="$emit('continue')">Review Order</button>
     </div>
   </div>
 </template>
 
-<script setup></script>
+<script setup>
+defineProps({
+  modelValue: {
+    type: Object,
+    required: true
+  }
+})
+
+defineEmits(['back', 'continue'])
+</script>
 
 <style scoped>
 .form-card {
