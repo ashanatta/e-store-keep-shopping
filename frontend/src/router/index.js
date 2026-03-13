@@ -30,6 +30,9 @@ import ReviewList from '@/views/admin/ReviewList.vue'
 import WishlistList from '@/views/admin/WishlistList.vue'
 import CartList from '@/views/admin/CartList.vue'
 import AdminOrderList from '@/views/admin/AdminOrderList.vue'
+import BannerList from '@/views/admin/BannerList.vue'
+import BannerCreate from '@/views/admin/BannerCreate.vue'
+import BannerEdit from '@/views/admin/BannerEdit.vue'
 
 // Define routes
 const routes = [
@@ -65,6 +68,9 @@ const routes = [
       { path: 'wishlists', name: 'AdminWishlists', component: WishlistList },
       { path: 'carts', name: 'AdminCarts', component: CartList },
       { path: 'orders', name: 'AdminOrders', component: AdminOrderList },
+      { path: 'banners', name: 'AdminBanners', component: BannerList },
+      { path: 'banners/create', name: 'AdminBannerCreate', component: BannerCreate },
+      { path: 'banners/:id/edit', name: 'AdminBannerEdit', component: BannerEdit },
     ],
     meta: { requiresAuth: true, requiresAdmin: true }
   }

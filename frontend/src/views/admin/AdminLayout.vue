@@ -15,7 +15,8 @@
           <li><router-link to="/admin/wishlists"><i class="bi bi-heart me-2"></i>Wishlists</router-link></li>
           <li><router-link to="/admin/carts"><i class="bi bi-cart me-2"></i>Carts</router-link></li>
           <li><router-link to="/admin/orders"><i class="bi bi-bag me-2"></i>Orders</router-link></li>
-          <li class="mt-4 pt-4 border-top">
+          <li><router-link to="/admin/banners"><i class="bi bi-image me-2"></i>Banners</router-link></li>
+          <li class="mt-4 pt-4" style="border-top: 1px solid rgba(255, 255, 255, 0.1)">
             <router-link to="/profile"><i class="bi bi-person-circle me-2"></i>My Profile</router-link>
           </li>
           <li>
@@ -50,8 +51,18 @@
 }
 
 .sidebar-header {
-  margin-bottom: 30px;
+  padding: 10px 0 30px 0;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+  margin-bottom: 25px;
   text-align: center;
+}
+
+.sidebar-header h3 {
+  font-weight: 700;
+  letter-spacing: 1px;
+  text-transform: uppercase;
+  font-size: 1.25rem;
+  margin: 0;
 }
 
 .sidebar-nav ul {
@@ -64,17 +75,31 @@
 }
 
 .sidebar-nav a {
-  color: white;
+  color: rgba(255, 255, 255, 0.7);
   text-decoration: none;
-  padding: 10px 15px;
-  display: block;
-  border-radius: 5px;
-  transition: background-color 0.3s ease;
+  padding: 12px 20px;
+  display: flex;
+  align-items: center;
+  border-radius: 8px;
+  transition: all 0.2s ease;
+  margin-bottom: 4px;
+  font-weight: 500;
 }
 
-.sidebar-nav a:hover,
+.sidebar-nav a i {
+  font-size: 1.1rem;
+  width: 24px;
+}
+
+.sidebar-nav a:hover {
+  color: white;
+  background-color: rgba(255, 255, 255, 0.1);
+}
+
 .sidebar-nav a.router-link-active {
-  background-color: #495057;
+  color: white;
+  background-color: rgba(255, 255, 255, 0.15);
+  box-shadow: inset 4px 0 0 #fff;
 }
 
 .admin-content {
