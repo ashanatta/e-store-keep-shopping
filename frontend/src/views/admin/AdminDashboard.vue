@@ -16,6 +16,7 @@
             <router-link to="/admin/reviews"    class="quick-link quick-reviews">   <i class="bi bi-star me-1"></i>Reviews</router-link>
             <router-link to="/admin/wishlists"  class="quick-link quick-wishlists"> <i class="bi bi-heart me-1"></i>Wishlists</router-link>
             <router-link to="/admin/carts"      class="quick-link quick-carts">     <i class="bi bi-cart me-1"></i>Carts</router-link>
+            <router-link to="/admin/banners"    class="quick-link quick-banners">   <i class="bi bi-image me-1"></i>Banners</router-link>
             <router-link to="/profile"          class="quick-link quick-profile">   <i class="bi bi-person-circle me-1"></i>My Profile</router-link>
           </div>
         </div>
@@ -318,5 +319,6 @@ onMounted(async () => {
 .quick-reviews    { background: #fef9c3; color: #854d0e; }
 .quick-wishlists  { background: #fce7f3; color: #be185d; }
 .quick-carts      { background: #ecfdf5; color: #047857; }
+.quick-banners    { background: #fff1f2; color: #e11d48; }
 .quick-profile    { background: #f1f5f9; color: #334155; }
 </style>

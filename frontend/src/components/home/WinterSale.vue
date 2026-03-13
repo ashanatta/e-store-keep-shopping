@@ -1,25 +1,25 @@
 <template>
-  <section class="winter-sale py-5">
+  <section v-if="banner" class="winter-sale py-5">
     <div class="container">
       <div class="row align-items-center g-5">
 
         <!-- Text Side -->
         <div class="col-md-6 sale-text">
-          <h2>Winter Sale</h2>
-          <p>
-            Stay warm with our premium winter collection. Up to 40% off!
+          <h2 class="animate-up">{{ banner.title }}</h2>
+          <p class="animate-up delay-1">
+            {{ banner.description }}
           </p>
-          <button class="sale-btn">
-            Shop Winter Collection
-          </button>
+          <router-link to="/shop" class="sale-btn animate-up delay-2 text-decoration-none d-inline-block">
+            Shop Collection
+          </router-link>
         </div>
 
         <!-- Image Side -->
         <div class="col-md-6">
-          <div class="image-wrapper">
+          <div class="image-wrapper shadow-lg">
             <img
-              src="https://images.unsplash.com/photo-1699435870820-36eab47448f8?w=800"
-              alt="Winter Sale"
+              :src="getImageUrl(banner.image)"
+              :alt="banner.title"
             />
           </div>
         </div>
@@ -29,10 +29,33 @@
   </section>
 </template>
 
-<script>
-export default {
-  name: "WinterSale"
+<script setup>
+import { ref, onMounted } from 'vue'
+import axios from 'axios'
+import { getImageUrl as resolveImageUrl } from '@/utils/imageUrl'
+
+const banner = ref(null)
+
+const fetchBanner = async () => {
+  try {
+    const response = await axios.get('/banners')
+    // We'll use the most recent active banner for this section
+    if (response.data.length > 0) {
+      banner.value = response.data[0]
+    }
+  } catch (error) {
+    console.error('Error fetching banner:', error)
+  }
 }
+
+const getImageUrl = (path) => {
+  if (path && (path.startsWith('http://') || path.startsWith('https://'))) {
+    return path
+  }
+  return resolveImageUrl(path)
+}
+
+onMounted(fetchBanner)
 </script>
 
 <style scoped>
@@ -88,6 +111,25 @@ export default {
 @media (max-width: 768px) {
   .sale-text h2 {
     font-size: 32px;
+  }
+}
+
+/* Animations */
+.animate-up {
+  animation: slideUp 0.8s cubic-bezier(0.23, 1, 0.32, 1) both;
+}
+
+.delay-1 { animation-delay: 0.2s; }
+.delay-2 { animation-delay: 0.4s; }
+
+@keyframes slideUp {
+  from {
+    opacity: 0;
+    transform: translateY(30px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
   }
 }
 </style>
