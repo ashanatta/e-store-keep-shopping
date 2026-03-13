@@ -15,6 +15,12 @@
           <li><router-link to="/admin/wishlists"><i class="bi bi-heart me-2"></i>Wishlists</router-link></li>
           <li><router-link to="/admin/carts"><i class="bi bi-cart me-2"></i>Carts</router-link></li>
           <li><router-link to="/admin/orders"><i class="bi bi-bag me-2"></i>Orders</router-link></li>
+          <li class="mt-4 pt-4 border-top">
+            <router-link to="/profile"><i class="bi bi-person-circle me-2"></i>My Profile</router-link>
+          </li>
+          <li>
+            <router-link to="/"><i class="bi bi-house me-2"></i>Home Page</router-link>
+          </li>
         </ul>
       </nav>
     </aside>
