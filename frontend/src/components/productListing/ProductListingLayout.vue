@@ -107,7 +107,14 @@
                   >
                     Sale {{ product.discount_percentage }}% OFF
                   </span>
-                  <button class="wishlist-btn" type="button">♥</button>
+                  <button
+                    class="wishlist-btn"
+                    :class="{ active: isInWishlist(product.id).value }"
+                    type="button"
+                    @click.prevent="toggleWishlist(product.id)"
+                  >
+                    ♥
+                  </button>
                 </div>
               </router-link>
 
@@ -154,6 +161,13 @@
 import { computed, ref, onMounted } from "vue"
 import axios from "axios"
 import { getImageUrl } from "@/utils/imageUrl"
+import { useWishlist } from "@/composables/useWishlist.js"
+import { useAuth } from "@/composables/useAuth.js"
+import { useToast } from "@/composables/useToast.js"
+
+const { toggle: toggleWishlistState, isInWishlist, fetchWishlist } = useWishlist()
+const { isAuthenticated } = useAuth()
+const { warning } = useToast()
 
 const props = defineProps({
   title: {
@@ -240,7 +254,18 @@ const fetchFilters = async () => {
 onMounted(() => {
   fetchProducts()
   fetchFilters()
+  if (isAuthenticated.value) {
+    fetchWishlist()
+  }
 })
+
+const toggleWishlist = async (id) => {
+  if (!isAuthenticated.value) {
+    warning("Please login to use wishlist.")
+    return
+  }
+  await toggleWishlistState(id)
+}
 
 const filteredProducts = computed(() => {
   let result = products.value
@@ -343,6 +368,11 @@ const renderStars = (rating) => {
   padding: 6px 10px;
   cursor: pointer;
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+  transition: all 0.2s ease;
+}
+
+.wishlist-btn.active {
+  color: #dc3545;
 }
 
 .empty-state {

@@ -4,42 +4,83 @@
     <div class="row g-3">
       <div class="col-md-6">
         <label class="form-label small">Full Name</label>
-        <input type="text" class="form-control form-control-lg" />
+        <input
+          v-model="modelValue.fullName"
+          type="text"
+          class="form-control form-control-lg"
+        />
       </div>
       <div class="col-md-6">
         <label class="form-label small">Email</label>
-        <input type="email" class="form-control form-control-lg" />
+        <input
+          v-model="modelValue.email"
+          type="email"
+          class="form-control form-control-lg"
+        />
       </div>
       <div class="col-12">
         <label class="form-label small">Phone Number</label>
-        <input type="text" class="form-control form-control-lg" />
+        <input
+          v-model="modelValue.phoneNumber"
+          type="text"
+          class="form-control form-control-lg"
+        />
       </div>
       <div class="col-12">
         <label class="form-label small">Street Address</label>
-        <input type="text" class="form-control form-control-lg" />
+        <input
+          v-model="modelValue.streetAddress"
+          type="text"
+          class="form-control form-control-lg"
+        />
       </div>
       <div class="col-md-6">
         <label class="form-label small">City</label>
-        <input type="text" class="form-control form-control-lg" />
+        <input
+          v-model="modelValue.city"
+          type="text"
+          class="form-control form-control-lg"
+        />
       </div>
       <div class="col-md-6">
         <label class="form-label small">State</label>
-        <input type="text" class="form-control form-control-lg" />
+        <input
+          v-model="modelValue.state"
+          type="text"
+          class="form-control form-control-lg"
+        />
       </div>
       <div class="col-md-6">
         <label class="form-label small">ZIP Code</label>
-        <input type="text" class="form-control form-control-lg" />
+        <input
+          v-model="modelValue.zipCode"
+          type="text"
+          class="form-control form-control-lg"
+        />
       </div>
       <div class="col-md-6">
         <label class="form-label small">Country</label>
-        <input type="text" class="form-control form-control-lg" value="USA" />
+        <input
+          v-model="modelValue.country"
+          type="text"
+          class="form-control form-control-lg"
+        />
       </div>
     </div>
-    <button class="btn btn-dark w-100 mt-4">Continue to Payment</button>
+    <button class="btn btn-dark w-100 mt-4" @click="$emit('continue')">Continue to Payment</button>
   </div>
 </template>
 
-<script setup></script>
+<script setup>
+defineProps({
+  modelValue: {
+    type: Object,
+    required: true
+  }
+})
+
+defineEmits(['continue'])
+</script>
 
 <style scoped>
 .form-card {
