@@ -68,12 +68,24 @@
                 >
                   <div class="avatar-initial me-2">{{ initial }}</div>
                 </button>
-                <ul class="dropdown-menu dropdown-menu-end">
+                <ul class="dropdown-menu dropdown-menu-end shadow-sm border-0 mt-2 p-2">
+                  <li class="mb-1">
+                    <div class="px-3 py-2 text-muted small border-bottom mb-1">
+                      {{ user?.name }}
+                    </div>
+                  </li>
                   <li v-if="isAdmin">
-                    <router-link to="/admin" class="dropdown-item">Admin Panel</router-link>
+                    <router-link to="/admin" class="dropdown-item rounded-2">Admin Panel</router-link>
                   </li>
                   <li>
-                    <button class="dropdown-item" @click="handleLogout">Logout</button>
+                    <router-link to="/profile" class="dropdown-item rounded-2">My Profile</router-link>
+                  </li>
+                  <li>
+                    <router-link to="/orders" class="dropdown-item rounded-2">My Orders</router-link>
+                  </li>
+                  <li><hr class="dropdown-divider"></li>
+                  <li>
+                    <button class="dropdown-item rounded-2 text-danger" @click="handleLogout">Logout</button>
                   </li>
                 </ul>
               </div>
