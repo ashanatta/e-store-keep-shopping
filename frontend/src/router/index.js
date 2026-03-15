@@ -33,6 +33,7 @@ import AdminOrderList from '@/views/admin/AdminOrderList.vue'
 import BannerList from '@/views/admin/BannerList.vue'
 import BannerCreate from '@/views/admin/BannerCreate.vue'
 import BannerEdit from '@/views/admin/BannerEdit.vue'
+import ChatList from '@/views/admin/ChatList.vue'
 
 // Define routes
 const routes = [
@@ -71,6 +72,7 @@ const routes = [
       { path: 'banners', name: 'AdminBanners', component: BannerList },
       { path: 'banners/create', name: 'AdminBannerCreate', component: BannerCreate },
       { path: 'banners/:id/edit', name: 'AdminBannerEdit', component: BannerEdit },
+      { path: 'chats', name: 'AdminChats', component: ChatList },
     ],
     meta: { requiresAuth: true, requiresAdmin: true }
   }

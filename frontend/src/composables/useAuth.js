@@ -1,9 +1,6 @@
 import { reactive, computed } from "vue"
 import axios from "axios"
 
-axios.defaults.baseURL = import.meta.env.VITE_API_BASE_URL
-axios.defaults.withCredentials = true
-
 const state = reactive({
   user: JSON.parse(localStorage.getItem("auth:user") || "null"),
   token: localStorage.getItem("auth:token") || "",
@@ -42,7 +39,21 @@ function setUser(user) {
   }
 }
 
+async function getCsrfCookie() {
+  const baseURL = axios.defaults.baseURL
+  // Ensure we hit the root domain, not the /api subpath
+  const rootURL = baseURL.replace('/api', '')
+  // Some browsers need the exact trailing slash or no trailing slash
+  await axios.get(`${rootURL}/sanctum/csrf-cookie`, {
+    withCredentials: true,
+    headers: {
+      'Accept': 'application/json'
+    }
+  })
+}
+
 async function login({ email, password }) {
+  await getCsrfCookie()
   const response = await axios.post("/login", {
     email,
     password,
@@ -54,6 +65,7 @@ async function login({ email, password }) {
 }
 
 async function register({ name, email, password, password_confirmation }) {
+  await getCsrfCookie()
   const response = await axios.post("/register", {
     name,
     email,

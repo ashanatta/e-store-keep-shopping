@@ -10,13 +10,16 @@ use App\Http\Controllers\Api\SizeController;
 use App\Http\Controllers\Api\ReviewController;
 use App\Http\Controllers\Api\WishlistController;
 use App\Http\Controllers\Api\CartController;
+use App\Http\Controllers\Api\ChatController;
 use App\Http\Controllers\Api\OrderController;
 use App\Http\Controllers\Api\AdminCommerceController;
 use App\Http\Controllers\Api\BannerController;
+use Illuminate\Support\Facades\Broadcast;
 use Illuminate\Support\Facades\Route;
 use Illuminate\Support\Facades\Storage;
 
 Route::post('/login', [AuthController::class, 'login']);
+Route::post('/register', [AuthController::class, 'register']);
 Route::post('/logout', [AuthController::class, 'logout'])->middleware('auth:sanctum');
 Route::post('/logout-all', [AuthController::class, 'logoutAll'])->middleware('auth:sanctum');
 
@@ -62,6 +65,15 @@ Route::middleware(['auth:sanctum'])->group(function () {
     Route::post('/orders', [OrderController::class, 'store']);
     Route::get('/orders/{order}', [OrderController::class, 'show']);
     Route::post('/orders/{order}/confirm-payment', [OrderController::class, 'confirmPayment']);
+
+    // Chat routes
+    Route::get('/chat/admin', [ChatController::class, 'getAdmin']);
+    Route::get('/chat/active', [ChatController::class, 'getActiveChats']);
+    Route::get('/chat/{userId}', [ChatController::class, 'getMessages']);
+    Route::post('/chat', [ChatController::class, 'sendMessage']);
+
+    // Broadcasting Auth
+    Broadcast::routes();
 });
 
 Route::middleware(['auth:sanctum', 'admin'])->group(function () {

@@ -16,6 +16,7 @@
           <li><router-link to="/admin/carts"><i class="bi bi-cart me-2"></i>Carts</router-link></li>
           <li><router-link to="/admin/orders"><i class="bi bi-bag me-2"></i>Orders</router-link></li>
           <li><router-link to="/admin/banners"><i class="bi bi-image me-2"></i>Banners</router-link></li>
+          <li><router-link to="/admin/chats"><i class="bi bi-chat-dots me-2"></i>Customer Chats</router-link></li>
           <li class="mt-4 pt-4" style="border-top: 1px solid rgba(255, 255, 255, 0.1)">
             <router-link to="/profile"><i class="bi bi-person-circle me-2"></i>My Profile</router-link>
           </li>
