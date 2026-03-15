@@ -8,10 +8,18 @@ use App\Models\OrderItem;
 use App\Models\ProductVariant;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Str;
 
 class OrderController extends Controller
 {
+    private $stripeKey;
+
+    public function __construct()
+    {
+        $this->stripeKey = env('STRIPE_KEY');
+    }
+
     /**
      * Display a listing of the user's orders.
      */
@@ -46,8 +54,8 @@ class OrderController extends Controller
             'payment.method' => 'required|string|in:card,stripe,paypal,cod',
             
             'items' => 'required|array|min:1',
-            'items.*.productId' => 'required|exists:products,id',
-            'items.*.variantId' => 'nullable|exists:product_variants,id',
+            'items.*.productId' => 'required',
+            'items.*.variantId' => 'nullable',
             'items.*.quantity' => 'required|integer|min:1',
             'items.*.price' => 'required|numeric',
             'items.*.name' => 'required|string',
@@ -106,13 +114,44 @@ class OrderController extends Controller
                     'zip_code' => $validated['shipping']['zipCode'],
                     'country' => $validated['shipping']['country'],
                     'payment_method' => $validated['payment']['method'],
-                    'payment_status' => $validated['payment']['method'] === 'cod' ? 'pending' : 'paid',
+                    'payment_status' => $validated['payment']['method'] === 'cod' ? 'pending' : ($validated['payment']['method'] === 'stripe' ? 'pending' : 'paid'),
                     'status' => 'pending',
                     'subtotal' => $validated['totals']['subtotal'],
                     'shipping' => $validated['totals']['shipping'],
                     'tax' => $validated['totals']['tax'],
                     'total' => $validated['totals']['total'],
                 ]);
+
+                // Handle Stripe PaymentIntent
+                if ($validated['payment']['method'] === 'stripe') {
+                    try {
+                        $stripeResponse = Http::withToken($this->stripeKey)
+                            ->asForm()
+                            ->post('https://api.stripe.com/v1/payment_intents', [
+                                'amount' => round($validated['totals']['total'] * 100),
+                                'currency' => 'usd',
+                                'metadata' => [
+                                    'order_id' => $order->id,
+                                    'order_number' => $order->order_number,
+                                    'user_id' => $user->id
+                                ],
+                            ]);
+
+                        if (!$stripeResponse->successful()) {
+                            throw new \Exception("Stripe API Error: " . $stripeResponse->body());
+                        }
+
+                        $paymentIntent = $stripeResponse->json();
+
+                        $order->update([
+                            'stripe_payment_intent_id' => $paymentIntent['id'],
+                            'stripe_client_secret' => $paymentIntent['client_secret'],
+                        ]);
+                    } catch (\Exception $e) {
+                        // Rollback order creation if Stripe fails
+                        throw new \Exception("Stripe Payment Error: " . $e->getMessage());
+                    }
+                }
 
                 foreach ($itemsToProcess as $processedItem) {
                     $item = $processedItem['data'];
@@ -138,6 +177,57 @@ class OrderController extends Controller
         } catch (\Exception $e) {
             return response()->json([
                 'message' => $e->getMessage()
+            ], 422);
+        }
+    }
+
+    /**
+     * Confirm a Stripe payment.
+     */
+    public function confirmPayment(Request $request, string $id)
+    {
+        $order = Order::findOrFail($id);
+        
+        if ($order->user_id !== $request->user()->id) {
+            return response()->json(['message' => 'Unauthorized'], 403);
+        }
+
+        if ($order->payment_method !== 'stripe') {
+            return response()->json(['message' => 'Invalid payment method for confirmation'], 400);
+        }
+
+        try {
+            // Verify payment status with Stripe
+            $stripeResponse = Http::withToken($this->stripeKey)
+                ->get('https://api.stripe.com/v1/payment_intents/' . $order->stripe_payment_intent_id);
+
+            if (!$stripeResponse->successful()) {
+                throw new \Exception("Stripe API Error: " . $stripeResponse->body());
+            }
+
+            $paymentIntent = $stripeResponse->json();
+            
+            if ($paymentIntent['status'] === 'succeeded') {
+                $order->update([
+                    'payment_status' => 'paid',
+                    // Optional: clear client secret for security
+                    'stripe_client_secret' => null
+                ]);
+
+                return response()->json([
+                    'message' => 'Payment confirmed successfully',
+                    'order' => $order
+                ]);
+            }
+
+            return response()->json([
+                'message' => 'Payment not yet succeeded',
+                'status' => $paymentIntent['status']
+            ], 400);
+
+        } catch (\Exception $e) {
+            return response()->json([
+                'message' => 'Error confirming payment: ' . $e->getMessage()
             ], 422);
         }
     }
