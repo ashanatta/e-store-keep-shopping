@@ -5,13 +5,13 @@ import axios from 'axios';
 window.Pusher = Pusher;
 
 const reverbKey = import.meta.env.VITE_REVERB_APP_KEY;
-const reverbHost = import.meta.env.VITE_REVERB_HOST || 'localhost';
+const reverbHost = import.meta.env.VITE_REVERB_HOST;
 const reverbPort = import.meta.env.VITE_REVERB_PORT || 8080;
 const reverbScheme = import.meta.env.VITE_REVERB_SCHEME || 'http';
 
 let echo;
 
-if (reverbKey) {
+if (reverbKey && reverbHost) {
     echo = new Echo({
         broadcaster: 'reverb',
         key: reverbKey,
@@ -52,12 +52,18 @@ if (reverbKey) {
         console.error('Reverb connection error:', err);
     });
 } else {
-    console.error('Echo error: VITE_REVERB_APP_KEY is missing. Real-time chat will not work.');
+    // If we're in development, we can fallback to localhost, but in production we should warn
+    const isProd = import.meta.env.PROD;
+    if (isProd) {
+        console.error('Echo error: VITE_REVERB_APP_KEY or VITE_REVERB_HOST is missing. Real-time chat will not work in production.');
+    }
+    
     // Provide a dummy object to prevent errors in other components
     echo = {
         private: () => ({ listen: () => ({ on: () => ({}) }) }),
         leave: () => {},
-        leaveAll: () => {}
+        leaveAll: () => {},
+        connector: { pusher: { connection: { bind: () => {} } } }
     };
 }
 
