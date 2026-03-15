@@ -46,7 +46,16 @@
             </div>
             <div class="text-muted">
               <p class="mb-0" v-if="paymentDetails.method === 'card'">Card ending in {{ paymentDetails.cardNumber.slice(-4) }}</p>
-              <p class="mb-0" v-else-if="paymentDetails.method === 'stripe'">Stripe</p>
+              <div v-else-if="paymentDetails.method === 'stripe'">
+                <p class="mb-2">Stripe Payment</p>
+                <div class="stripe-review-container p-3 rounded-3 border bg-light mb-3">
+                  <label class="form-label small mb-3 d-block">Stripe Card Details</label>
+                  <div id="stripe-card-element" class="bg-white p-3 rounded-3 border shadow-sm">
+                    <!-- Stripe Card Element will be mounted here -->
+                  </div>
+                  <div id="card-errors" class="text-danger small mt-2" role="alert"></div>
+                </div>
+              </div>
               <p class="mb-0" v-else-if="paymentDetails.method === 'paypal'">PayPal</p>
               <p class="mb-0" v-else>Cash on Delivery</p>
             </div>
@@ -67,7 +76,7 @@
 </template>
 
 <script setup>
-import { ref, onMounted, computed } from "vue"
+import { ref, onMounted, computed, watch, nextTick } from "vue"
 import CheckoutStepper from "@/components/checkout/CheckoutStepper.vue"
 import CheckoutShippingForm from "@/components/checkout/CheckoutShippingForm.vue"
 import CheckoutPaymentForm from "@/components/checkout/CheckoutPaymentForm.vue"
@@ -76,10 +85,16 @@ import { useCart } from "@/composables/useCart.js"
 import { useRouter } from "vue-router"
 import { useToast } from "@/composables/useToast.js"
 import axios from "axios"
+import { loadStripe } from "@stripe/stripe-js"
 
 const { items, fetchCart, clearCart } = useCart()
 const router = useRouter()
-const { success, error: toastError } = useToast()
+const { success, error: toastError, info } = useToast()
+
+const stripe = ref(null)
+const elements = ref(null)
+const cardElement = ref(null)
+const isProcessing = ref(false)
 
 const currentStep = ref("shipping")
 
@@ -108,27 +123,134 @@ const subtotal = computed(() =>
 const tax = computed(() => subtotal.value * 0.08)
 const total = computed(() => subtotal.value + tax.value)
 
+// Initialize Stripe
+const initStripe = async () => {
+  const publishableKey = import.meta.env.VITE_STRIPE_PUBLISHABLE_KEY
+  if (!publishableKey) {
+    console.error("Stripe Publishable Key is missing from .env")
+    toastError("Payment system configuration error.")
+    return
+  }
+
+  if (!stripe.value) {
+    stripe.value = await loadStripe(publishableKey)
+  }
+  
+  if (stripe.value) {
+    // Always create a new elements instance and card element to ensure fresh mount
+    if (cardElement.value) {
+      cardElement.value.unmount()
+    }
+    
+    elements.value = stripe.value.elements()
+    cardElement.value = elements.value.create("card", {
+      style: {
+        base: {
+          fontSize: "16px",
+          color: "#32325d",
+          "::placeholder": {
+            color: "#aab7c4"
+          }
+        },
+        invalid: {
+          color: "#fa755a",
+          iconColor: "#fa755a"
+        }
+      }
+    })
+    
+    // Wait for DOM to update
+    await nextTick()
+    const element = document.getElementById("stripe-card-element")
+    if (element) {
+      cardElement.value.mount("#stripe-card-element")
+    } else {
+      console.error("Stripe card element mount point not found")
+    }
+  }
+}
+
+// Watch for step and method changes to init Stripe
+watch([currentStep, () => paymentDetails.value.method], async ([newStep, newMethod]) => {
+  if (newStep === "review" && newMethod === "stripe") {
+    // Small delay to ensure the DOM element is rendered
+    setTimeout(initStripe, 100)
+  }
+})
+
 const handlePlaceOrder = async () => {
+  if (isProcessing.value) return
+  isProcessing.value = true
+
   try {
     const orderData = {
       shipping: shippingDetails.value,
       payment: paymentDetails.value,
-      items: items.value,
+      items: items.value.map(item => ({
+        productId: item.productId,
+        variantId: item.variantId,
+        quantity: item.quantity,
+        price: item.price,
+        name: item.name,
+        size: item.size !== '-' ? item.size : null,
+        color: item.color !== '-' ? item.color : null
+      })),
       totals: {
         subtotal: subtotal.value,
-        shipping: 0, // FREE shipping
+        shipping: 0,
         tax: tax.value,
         total: total.value
       }
     }
 
     const response = await axios.post('/orders', orderData)
-    success("Order placed successfully! Thank you for your purchase.")
+    const order = response.data.order
+
+    if (paymentDetails.value.method === 'stripe') {
+      info("Processing secure payment...")
+      
+      const { error: stripeError, paymentIntent } = await stripe.value.confirmCardPayment(
+        order.stripe_client_secret,
+        {
+          payment_method: {
+            card: cardElement.value,
+            billing_details: {
+              name: shippingDetails.value.fullName,
+              email: shippingDetails.value.email,
+              address: {
+                line1: shippingDetails.value.streetAddress,
+                city: shippingDetails.value.city,
+                state: shippingDetails.value.state,
+                postal_code: shippingDetails.value.zipCode,
+                country: 'US' // Adjust as needed
+              }
+            }
+          }
+        }
+      )
+
+      if (stripeError) {
+        toastError(stripeError.message)
+        isProcessing.value = false
+        return
+      }
+
+      if (paymentIntent.status === 'succeeded') {
+        // Confirm payment with backend
+        await axios.post(`/orders/${order.id}/confirm-payment`)
+        success("Payment successful! Order placed.")
+      }
+    } else {
+      success("Order placed successfully!")
+    }
+
     await clearCart()
-    router.push(`/orders/${response.data.order.id}`)
+    router.push(`/orders/${order.id}`)
   } catch (err) {
     console.error('Error placing order:', err)
     toastError(err.response?.data?.message || "Failed to place order. Please try again.")
+  } finally {
+    isProcessing.value = false
   }
 }
 

@@ -5,17 +5,21 @@
 
       <div class="category-grid">
         <div
-          v-for="(category, index) in categories"
-          :key="category.name"
+          v-for="category in categories"
+          :key="category.id"
           class="category-card"
         >
-          <router-link :to="category.path">
+          <router-link :to="`/${category.name.toLowerCase()}`">
             <div class="image-wrapper">
               <img
-                :src="category.image"
+                v-if="category.image"
+                :src="getImageUrl(category.image)"
                 :alt="category.name"
                 class="category-image"
               />
+              <div v-else class="category-image bg-light d-flex align-items-center justify-content-center">
+                <i class="bi bi-image text-muted fs-1"></i>
+              </div>
 
               <div class="overlay"></div>
 
@@ -35,23 +39,15 @@
 </template>
 
 <script setup>
-const categories = [
-  {
-    name: "Men",
-    path: "/men",
-    image: "https://images.unsplash.com/photo-1520975918318-7f2b6a29b6c3"
-  },
-  {
-    name: "Women",
-    path: "/women",
-    image: "https://images.unsplash.com/photo-1490481651871-ab68de25d43d"
-  },
-  {
-    name: "Kids",
-    path: "/kids",
-    image: "https://images.unsplash.com/photo-1503454537195-1dcabb73ffb9"
-  }
-]
+import { onMounted } from "vue"
+import { useCategories } from "@/composables/useCategories.js"
+import { getImageUrl } from "@/utils/imageUrl"
+
+const { categories, fetchCategories } = useCategories()
+
+onMounted(async () => {
+  await fetchCategories()
+})
 </script>
 
 <style scoped>

@@ -20,6 +20,8 @@ class Order extends Model
         'zip_code',
         'country',
         'payment_method',
+        'stripe_payment_intent_id',
+        'stripe_client_secret',
         'payment_status',
         'status',
         'subtotal',

@@ -46,6 +46,14 @@
       </div>
     </div>
 
+    <div v-if="modelValue.method === 'stripe'" class="mt-3">
+      <div class="stripe-container p-3 rounded-3 border bg-light text-center">
+        <i class="bi bi-credit-card fs-1 text-muted mb-2 d-block"></i>
+        <p class="mb-0 fw-semibold">Stripe Secure Payment</p>
+        <p class="text-muted small">You'll enter your card details in the next step.</p>
+      </div>
+    </div>
+
     <div v-if="modelValue.method === 'card'" class="row g-3 mt-3">
       <div class="col-12">
         <label class="form-label small">Card Number</label>
