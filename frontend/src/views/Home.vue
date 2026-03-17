@@ -72,9 +72,8 @@ export default {
     },
     async fetchProducts() {
       try {
-        const response = await axios.get('/products')
-        // Take first 8 products for featured section
-        this.products = response.data.slice(0, 8).map(p => ({
+        const response = await axios.get('/products', { params: { limit: 8 } })
+        this.products = (response.data || []).map(p => ({
           ...p,
           image: getImageUrl(p.image),
           displayPrice: Number(p.final_price || p.min_variant_price || 0) || null,

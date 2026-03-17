@@ -7,6 +7,7 @@ const state = reactive({
   items: [],
   loading: false,
   initialized: false,
+  cartBounceTrigger: 0,
 })
 
 const getDisplayImage = (item) => getImageUrl(item?.product?.image)
@@ -52,6 +53,7 @@ async function addToCart({ productId, variantId = null, quantity = 1 }) {
     quantity,
   })
   await fetchCart()
+  state.cartBounceTrigger = Date.now()
 }
 
 async function updateQuantity(cartItemId, quantity) {
@@ -79,6 +81,7 @@ export function useCart() {
     count,
     loading: computed(() => state.loading),
     initialized: computed(() => state.initialized),
+    cartBounceTrigger: computed(() => state.cartBounceTrigger),
     fetchCart,
     addToCart,
     updateQuantity,

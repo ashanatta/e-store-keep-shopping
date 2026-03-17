@@ -158,13 +158,15 @@
 </template>
 
 <script setup>
-import { computed, ref, onMounted } from "vue"
+import { computed, ref, onMounted, watch } from "vue"
+import { useRoute } from "vue-router"
 import axios from "axios"
 import { getImageUrl } from "@/utils/imageUrl"
 import { useWishlist } from "@/composables/useWishlist.js"
 import { useAuth } from "@/composables/useAuth.js"
 import { useToast } from "@/composables/useToast.js"
 
+const route = useRoute()
 const { toggle: toggleWishlistState, isInWishlist, fetchWishlist } = useWishlist()
 const { isAuthenticated } = useAuth()
 const { warning } = useToast()
@@ -200,7 +202,10 @@ const loading = ref(true)
 const fetchProducts = async () => {
   loading.value = true
   try {
-    const response = await axios.get('/products')
+    const searchQuery = route.query.q || route.query.search || ''
+    const params = {}
+    if (searchQuery.trim()) params.search = searchQuery.trim()
+    const response = await axios.get('/products', { params })
     // Transform backend data to frontend structure
     products.value = response.data.map(p => ({
       ...p,
@@ -257,6 +262,10 @@ onMounted(() => {
   if (isAuthenticated.value) {
     fetchWishlist()
   }
+})
+
+watch(() => route.query.q, () => {
+  fetchProducts()
 })
 
 const toggleWishlist = async (id) => {
