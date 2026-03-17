@@ -85,7 +85,15 @@
         </div>
 
         <div class="d-flex gap-3 mb-4">
-          <button class="btn btn-dark flex-grow-1" @click="addSelectedToCart">Add to Cart</button>
+          <button
+          class="btn btn-dark flex-grow-1 add-to-cart-btn"
+          :class="{ 'add-to-cart-success': addToCartSuccess }"
+          :disabled="addingToCart"
+          @click="addSelectedToCart"
+        >
+          <span v-if="!addToCartSuccess">{{ addingToCart ? 'Adding...' : 'Add to Cart' }}</span>
+          <span v-else>✓ Added!</span>
+        </button>
           <button class="wishlist-heart-btn" :class="{ active: inWishlist }" @click="toggleWishlist">♥</button>
         </div>
 
@@ -229,6 +237,8 @@ const hasUserReviewed = ref(false)
 const selectedImage = ref('')
 const selectedColorId = ref(null)
 const selectedSizeId = ref(null)
+const addingToCart = ref(false)
+const addToCartSuccess = ref(false)
 const quantity = ref(1)
 const activeTab = ref("description")
 
@@ -459,13 +469,23 @@ const addSelectedToCart = async () => {
     error("This product is out of stock.")
     return
   }
-  await addToCart({
-    productId: product.value.id,
-    variantId: selectedVariant.value.id,
-    quantity: quantity.value,
-  })
-  await fetchCart()
-  success("Added to cart successfully!")
+  addingToCart.value = true
+  addToCartSuccess.value = false
+  try {
+    await addToCart({
+      productId: product.value.id,
+      variantId: selectedVariant.value.id,
+      quantity: quantity.value,
+    })
+    await fetchCart()
+    addToCartSuccess.value = true
+    success("Added to cart successfully!")
+    setTimeout(() => { addToCartSuccess.value = false }, 1500)
+  } catch (err) {
+    error("Failed to add to cart.")
+  } finally {
+    addingToCart.value = false
+  }
 }
 
 const toggleWishlist = async () => {
@@ -658,5 +678,24 @@ watch(() => route.params.id, () => {
 .wishlist-heart-btn.active {
   border-color: #dc3545;
   color: #dc3545;
+}
+
+.add-to-cart-btn {
+  transition: transform 0.2s ease, background-color 0.3s ease;
+}
+
+.add-to-cart-btn:active {
+  transform: scale(0.97);
+}
+
+.add-to-cart-success {
+  background-color: #198754 !important;
+  animation: addSuccessPulse 0.5s ease;
+}
+
+@keyframes addSuccessPulse {
+  0% { transform: scale(1); }
+  50% { transform: scale(1.05); }
+  100% { transform: scale(1); }
 }
 </style>

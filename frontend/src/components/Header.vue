@@ -46,9 +46,11 @@
           <div class="search-box d-none d-md-flex align-items-center">
             <i class="bi bi-search text-muted me-2"></i>
             <input
+              v-model="searchQuery"
               type="text"
               class="form-control border-0 shadow-none"
               placeholder="Search products..."
+              @keyup.enter="handleSearch"
             />
           </div>
 
@@ -91,7 +93,7 @@
               </div>
             </template>
             <router-link to="/cart" class="icon-link cart-link">
-              <i class="bi bi-cart icon"></i>
+              <i class="bi bi-cart icon" :class="{ 'cart-bounce': cartAnimating }"></i>
               <span v-if="cartCount > 0" class="cart-badge">{{ cartCount }}</span>
             </router-link>
           </div>
@@ -104,12 +106,37 @@
 </template>
 
 <script setup>
-import { computed, onMounted, watch } from "vue"
+import { computed, onMounted, ref, watch } from "vue"
+import { useRouter, useRoute } from "vue-router"
 import { useAuth } from "@/composables/useAuth.js"
 import { useCart } from "@/composables/useCart.js"
 
+const router = useRouter()
+const route = useRoute()
 const { user, isAuthenticated, isAdmin, logout } = useAuth()
-const { count: cartCount, fetchCart } = useCart()
+const { count: cartCount, fetchCart, cartBounceTrigger } = useCart()
+const cartAnimating = ref(false)
+const searchQuery = ref("")
+
+const handleSearch = () => {
+  const q = searchQuery.value?.trim()
+  if (q) {
+    router.push({ path: "/shop", query: { q } })
+  } else {
+    router.push({ path: "/shop" })
+  }
+}
+
+watch(() => route.query.q, (q) => {
+  searchQuery.value = q || ""
+}, { immediate: true })
+
+watch(searchQuery, (val) => {
+  if (!val?.trim() && route.query.q) {
+    const { q, ...rest } = route.query
+    router.replace({ path: route.path, query: rest })
+  }
+})
 
 const initial = computed(() => {
   const name = user.value?.name || ""
@@ -123,6 +150,11 @@ const handleLogout = async () => {
 watch(isAuthenticated, async () => {
   await fetchCart()
 }, { immediate: true })
+
+watch(cartBounceTrigger, () => {
+  cartAnimating.value = true
+  setTimeout(() => { cartAnimating.value = false }, 600)
+})
 
 onMounted(async () => {
   if (isAuthenticated.value) {
@@ -179,6 +211,17 @@ onMounted(async () => {
   line-height: 18px;
   text-align: center;
   padding: 0 5px;
+}
+
+.cart-bounce {
+  animation: cartBounce 0.6s ease;
+}
+
+@keyframes cartBounce {
+  0%, 100% { transform: scale(1); }
+  25% { transform: scale(1.3); }
+  50% { transform: scale(0.9); }
+  75% { transform: scale(1.15); }
 }
 
 .router-link-exact-active {

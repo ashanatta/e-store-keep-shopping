@@ -24,7 +24,7 @@
 
 <script setup>
 import { ref } from "vue"
-import { useRouter, useRoute } from "vue-router"
+import { useRouter } from "vue-router"
 import { useAuth } from "@/composables/useAuth.js"
 
 const email = ref("")
@@ -32,15 +32,13 @@ const password = ref("")
 const error = ref("")
 
 const router = useRouter()
-const route = useRoute()
 const { login } = useAuth()
 
 const onSubmit = async () => {
   error.value = ""
   try {
     await login({ email: email.value, password: password.value })
-    const redirectTo = route.query.redirect || "/"
-    router.push(redirectTo)
+    router.push("/")
   } catch (err) {
     error.value = err?.response?.data?.message || "Login failed"
   }

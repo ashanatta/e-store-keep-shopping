@@ -15,14 +15,24 @@ class ProductController extends Controller
     /**
      * Display a listing of the resource.
      */
-    public function index()
+    public function index(Request $request)
     {
-        return response()->json(
-            Product::with('category:id,name', 'variants.color', 'variants.size', 'variants.images')
-                ->withCount('reviews')
-                ->withAvg('reviews', 'rating')
-                ->get()
-        );
+        $query = Product::with('category:id,name', 'variants.color', 'variants.size', 'variants.images')
+            ->withCount('reviews')
+            ->withAvg('reviews', 'rating');
+
+        if ($search = trim((string) $request->get('search', $request->get('q', '')))) {
+            $query->where(function ($q) use ($search) {
+                $q->where('name', 'like', '%' . $search . '%')
+                    ->orWhere('description', 'like', '%' . $search . '%');
+            });
+        }
+
+        if ($limit = (int) $request->get('limit')) {
+            $query->limit($limit);
+        }
+
+        return response()->json($query->get());
     }
 
     /**
