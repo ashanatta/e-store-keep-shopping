@@ -52,24 +52,45 @@ onMounted(async () => {
 
 <style scoped>
 .category-section {
-  padding: 80px 0;
+  padding: 40px 0;
   background: #f8f9fa;
 }
 
+@media (min-width: 768px) {
+  .category-section {
+    padding: 80px 0;
+  }
+}
+
 .title {
-  margin-bottom: 50px;
+  margin-bottom: 30px;
   font-weight: 600;
+  font-size: 1.5rem;
+}
+
+@media (min-width: 768px) {
+  .title {
+    margin-bottom: 50px;
+    font-size: inherit;
+  }
 }
 
 .category-grid {
   display: grid;
   grid-template-columns: repeat(1, 1fr);
-  gap: 30px;
+  gap: 16px;
+}
+
+@media (min-width: 576px) {
+  .category-grid {
+    gap: 20px;
+  }
 }
 
 @media (min-width: 768px) {
   .category-grid {
     grid-template-columns: repeat(3, 1fr);
+    gap: 30px;
   }
 }
 

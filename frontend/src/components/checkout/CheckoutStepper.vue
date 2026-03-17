@@ -37,31 +37,53 @@ defineProps({
   display: flex;
   align-items: center;
   justify-content: center;
-  gap: 20px;
+  gap: 8px;
+  flex-wrap: wrap;
 }
 
 .step {
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 8px;
+  gap: 4px;
   color: #9aa0a6;
 }
 
 .step-circle {
-  width: 44px;
-  height: 44px;
+  width: 36px;
+  height: 36px;
   border-radius: 50%;
   background: #f0f1f3;
   display: grid;
   place-items: center;
-  font-size: 18px;
+  font-size: 14px;
 }
 
 .step-line {
   height: 2px;
-  width: 60px;
+  width: 24px;
   background: #e5e7eb;
+  flex-shrink: 0;
+}
+
+@media (min-width: 576px) {
+  .stepper {
+    gap: 20px;
+  }
+
+  .step {
+    gap: 8px;
+  }
+
+  .step-circle {
+    width: 44px;
+    height: 44px;
+    font-size: 18px;
+  }
+
+  .step-line {
+    width: 60px;
+  }
 }
 
 .step.active,

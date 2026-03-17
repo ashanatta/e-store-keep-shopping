@@ -92,7 +92,7 @@
       </div>
     </div>
 
-    <div class="d-flex gap-3 mt-4">
+    <div class="d-flex flex-column flex-sm-row gap-2 gap-sm-3 mt-4">
       <button class="btn btn-outline-dark flex-grow-1" @click="$emit('back')">Back</button>
       <button class="btn btn-dark flex-grow-1" @click="$emit('continue')">Review Order</button>
     </div>
@@ -115,6 +115,12 @@ defineEmits(['back', 'continue'])
   border: 1px solid #e9ecef;
   border-radius: 16px;
   background: #fff;
+}
+
+@media (max-width: 576px) {
+  .form-card {
+    padding: 1rem !important;
+  }
 }
 
 .payment-option {

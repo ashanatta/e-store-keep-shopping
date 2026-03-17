@@ -1,5 +1,5 @@
 <template>
-  <div class="container py-5">
+  <div class="container py-3 py-md-5 product-detail-page">
     <div class="row g-5">
       <div class="col-lg-6">
         <div class="main-image mb-3">
@@ -569,6 +569,9 @@ watch(() => route.params.id, () => {
 
 .thumbnails {
   overflow-x: auto;
+  flex-wrap: nowrap;
+  -webkit-overflow-scrolling: touch;
+  gap: 0.5rem;
 }
 
 .thumb-btn {
@@ -578,7 +581,35 @@ watch(() => route.params.id, () => {
   background: transparent;
   width: 90px;
   height: 90px;
+  min-width: 90px;
   overflow: hidden;
+  flex-shrink: 0;
+}
+
+@media (max-width: 576px) {
+  .product-detail-page {
+    padding-left: 0.75rem;
+    padding-right: 0.75rem;
+  }
+
+  .main-image img {
+    max-height: 320px;
+  }
+
+  .thumb-btn {
+    width: 64px;
+    height: 64px;
+    min-width: 64px;
+  }
+
+  .tab-btn {
+    padding: 6px 12px;
+    font-size: 13px;
+  }
+
+  .add-to-cart-btn {
+    font-size: 0.9rem;
+  }
 }
 
 .thumb-btn img {

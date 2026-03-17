@@ -226,24 +226,46 @@ watch(isOpen, (newVal) => {
 <style scoped>
 .chat-widget {
   position: fixed;
-  bottom: 2rem;
-  right: 2rem;
+  bottom: 1rem;
+  right: 1rem;
   z-index: 1050;
 }
 
+@media (min-width: 576px) {
+  .chat-widget {
+    bottom: 2rem;
+    right: 2rem;
+  }
+}
+
 .chat-toggle {
-  width: 60px;
-  height: 60px;
+  width: 52px;
+  height: 52px;
   position: relative;
 }
 
+@media (min-width: 576px) {
+  .chat-toggle {
+    width: 60px;
+    height: 60px;
+  }
+}
+
 .chat-window {
-  width: 350px;
-  height: 500px;
+  width: calc(100vw - 2rem);
+  max-width: 350px;
+  height: min(85vh, 500px);
   display: flex;
   flex-direction: column;
   overflow: hidden;
   border-radius: 1rem;
+}
+
+@media (min-width: 576px) {
+  .chat-window {
+    width: 350px;
+    height: 500px;
+  }
 }
 
 .card-body {

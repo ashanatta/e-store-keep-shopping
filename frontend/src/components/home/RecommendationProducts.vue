@@ -1,10 +1,10 @@
 <template>
-  <div class="container mt-4">
+  <div class="container mt-4 px-3 px-md-0 recommendation-section">
     <h4>Users like you also liked this</h4>
 
     <div class="row">
       <div
-        class="col-md-3 mb-3"
+        class="col-6 col-md-3 mb-3"
         v-for="product in products"
         :key="product.id"
       >
@@ -99,8 +99,24 @@ export default {
 </script>
 
 <style scoped>
+.recommendation-section h4 {
+  font-size: 1.1rem;
+}
+
+@media (min-width: 768px) {
+  .recommendation-section h4 {
+    font-size: 1.25rem;
+  }
+}
+
 .card-img-top {
-  height: 180px;
+  height: 160px;
   object-fit: cover;
+}
+
+@media (min-width: 576px) {
+  .card-img-top {
+    height: 180px;
+  }
 }
 </style>

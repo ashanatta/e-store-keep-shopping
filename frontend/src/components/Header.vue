@@ -1,6 +1,6 @@
 <template>
-  <nav class="navbar navbar-expand-lg bg-white shadow-sm py-3">
-    <div class="container-fluid px-4">
+  <nav class="navbar navbar-expand-lg bg-white shadow-sm py-2 py-lg-3">
+    <div class="container-fluid px-3 px-md-4">
 
       <!-- Logo -->
       <router-link to="/" class="navbar-brand d-flex align-items-center gap-2 text-decoration-none text-dark">
@@ -47,10 +47,10 @@
         </ul>
 
         <!-- Right Side -->
-        <div class="d-flex flex-column flex-lg-row align-items-center gap-3">
+        <div class="d-flex flex-column flex-lg-row align-items-stretch align-items-lg-center gap-2 gap-lg-3 flex-grow-1 flex-lg-grow-0">
 
           <!-- Search -->
-          <div class="search-box d-none d-md-flex align-items-center">
+          <div class="search-box d-flex align-items-center">
             <i class="bi bi-search text-muted me-2"></i>
             <input
               v-model="searchQuery"
@@ -63,7 +63,7 @@
 
           <!-- Icons -->
            
-          <div class="d-flex gap-3 mt-3 mt-lg-0 align-items-center">
+          <div class="d-flex gap-2 gap-lg-3 justify-content-center justify-content-lg-end align-items-center">
             <template v-if="!isAuthenticated">
               <router-link to="/login" class="btn btn-outline-dark btn-sm">Login</router-link>
               <router-link to="/register" class="btn btn-dark btn-sm">Register</router-link>
@@ -190,8 +190,15 @@ onMounted(async () => {
   background: #e9ecef;
   padding: 6px 12px;
   border-radius: 10px;
-  width: 500px; 
-  margin-right: 24px;
+  width: 100%;
+  max-width: 500px;
+  margin-right: 0;
+}
+
+@media (min-width: 992px) {
+  .search-box {
+    margin-right: 24px;
+  }
 }
 
 .search-box input {
@@ -271,8 +278,27 @@ onMounted(async () => {
 }
 
 .header-logo {
-  height: 42px;
+  height: 36px;
   width: auto;
   object-fit: contain;
+}
+
+@media (min-width: 992px) {
+  .header-logo {
+    height: 42px;
+  }
+}
+
+@media (max-width: 991px) {
+  .header-nav-links {
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 0.5rem;
+  }
+
+  .header-nav-links .nav-link {
+    white-space: normal;
+    padding: 0.5rem;
+  }
 }
 </style>

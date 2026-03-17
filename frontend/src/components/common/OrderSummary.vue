@@ -80,9 +80,25 @@ const total = computed(() => subtotal.value + tax.value)
 }
 
 .summary-thumb {
-  width: 56px;
-  height: 72px;
+  width: 48px;
+  height: 60px;
+  min-width: 48px;
   object-fit: cover;
   border-radius: 12px;
+}
+
+@media (min-width: 576px) {
+  .summary-thumb {
+    width: 56px;
+    height: 72px;
+  }
+}
+
+.summary-items .flex-grow-1 {
+  min-width: 0;
+}
+
+.summary-items .fw-semibold:last-child {
+  flex-shrink: 0;
 }
 </style>

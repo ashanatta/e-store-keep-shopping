@@ -1,5 +1,5 @@
 <template>
-  <div class="container py-4">
+  <div class="container py-3 py-md-4 product-listing-wrapper">
     <div class="d-flex flex-column flex-md-row align-items-md-center justify-content-between mb-3">
       <div>
         <h2 class="mb-1">{{ title }}</h2>
@@ -91,7 +91,7 @@
           <div
             v-for="product in sortedProducts"
             :key="product.id"
-            class="col-lg-4 col-md-6"
+            class="col-6 col-lg-4 col-md-6"
           >
             <div class="card product-card h-100">
               <router-link
@@ -390,6 +390,29 @@ const renderStars = (rating) => {
 }
 
 .sort-select {
-  min-width: 180px;
+  min-width: 140px;
+  max-width: 100%;
+}
+
+.product-listing-wrapper {
+  padding-left: 0.75rem;
+  padding-right: 0.75rem;
+}
+
+@media (min-width: 768px) {
+  .product-listing-wrapper {
+    padding-left: 12px;
+    padding-right: 12px;
+  }
+}
+
+@media (max-width: 767px) {
+  .filters-card {
+    margin-bottom: 1rem;
+  }
+
+  .sort-select {
+    min-width: 100%;
+  }
 }
 </style>

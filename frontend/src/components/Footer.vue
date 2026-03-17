@@ -1,6 +1,6 @@
 <template>
-  <footer class="bg-dark text-white mt-auto py-4">
-    <div class="container">
+  <footer class="bg-dark text-white mt-auto py-4 footer-responsive">
+    <div class="container px-3 px-md-0">
       <div class="row">
 
         <div class="col-md-4">
@@ -36,3 +36,29 @@
 
 <script setup>
 </script>
+
+<style scoped>
+.footer-responsive .row > [class*="col-"] {
+  margin-bottom: 1.5rem;
+}
+
+.footer-responsive .row > [class*="col-"]:last-of-type {
+  margin-bottom: 0;
+}
+
+@media (min-width: 768px) {
+  .footer-responsive .row > [class*="col-"] {
+    margin-bottom: 0;
+  }
+}
+
+.footer-responsive h5 {
+  font-size: 1rem;
+  margin-bottom: 0.5rem;
+}
+
+.footer-responsive p,
+.footer-responsive ul {
+  font-size: 0.9rem;
+}
+</style>

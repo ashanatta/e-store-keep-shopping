@@ -1,5 +1,5 @@
 <template>
-  <div class="container py-5">
+  <div class="container py-3 py-md-5 cart-page px-3 px-md-0">
     <h3 class="fw-semibold mb-4">Shopping Cart ({{ count }} items)</h3>
     <div v-if="!isAuthenticated" class="alert alert-warning">
       Please login to view your cart.
@@ -97,3 +97,15 @@ onMounted(async () => {
   }
 })
 </script>
+
+<style scoped>
+.cart-page h3 {
+  font-size: 1.25rem;
+}
+
+@media (min-width: 768px) {
+  .cart-page h3 {
+    font-size: 1.5rem;
+  }
+}
+</style>
