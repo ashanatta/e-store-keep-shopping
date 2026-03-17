@@ -153,6 +153,7 @@ const initial = computed(() => {
 
 const handleLogout = async () => {
   await logout()
+  router.push("/")
 }
 
 watch(isAuthenticated, async () => {
