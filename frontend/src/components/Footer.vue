@@ -20,7 +20,7 @@
         <div class="col-md-4">
           <h5>Contact</h5>
           <p>Email: muhammadashan1714@gmail.com</p>
-          <p>Phone: +923060297685</p>
+          <p>Phone: +923060297685 </p>
         </div>
 
       </div>
