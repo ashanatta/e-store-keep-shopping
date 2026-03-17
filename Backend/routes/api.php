@@ -14,6 +14,7 @@ use App\Http\Controllers\Api\ChatController;
 use App\Http\Controllers\Api\OrderController;
 use App\Http\Controllers\Api\AdminCommerceController;
 use App\Http\Controllers\Api\BannerController;
+use App\Http\Controllers\Api\RecommendationController;
 use Illuminate\Support\Facades\Broadcast;
 use Illuminate\Support\Facades\Route;
 use Illuminate\Support\Facades\Storage;
@@ -32,6 +33,7 @@ Route::get('/categories', [CategoryController::class, 'index']);
 Route::get('/categories/{category}', [CategoryController::class, 'show']);
 Route::get('/colors', [ColorController::class, 'index']);
 Route::get('/sizes', [SizeController::class, 'index']);
+Route::get('/recommendations/users-like-you', [RecommendationController::class, 'usersLikeYouAlsoLiked']);
 
 Route::get('/files/{path}', function (string $path) {
     if (! Storage::disk('public')->exists($path)) {
