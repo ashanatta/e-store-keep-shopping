@@ -22,7 +22,7 @@
       <div class="collapse navbar-collapse" id="navbarContent">
 
         <!-- Center Menu -->
-        <ul class="navbar-nav mx-auto text-center gap-lg-4">
+        <ul class="navbar-nav mx-auto text-center gap-lg-4 header-nav-links">
           <li class="nav-item">
             <router-link to="/" class="nav-link">Home</router-link>
           </li>
@@ -39,7 +39,7 @@
             <router-link to="/kids" class="nav-link">Kids</router-link>
           </li>
           <li class="nav-item">
-            <router-link to="/about" class="nav-link">About Us</router-link>
+            <router-link to="/about" class="nav-link">About&nbsp;Us</router-link>
           </li>
           <li class="nav-item">
             <router-link to="/sales" class="nav-link">Sales</router-link>
@@ -171,6 +171,19 @@ onMounted(async () => {
 </script>
 
 <style scoped>
+/* Prevent nav links from wrapping on production (fixes "About Us" breaking) */
+.header-nav-links {
+  flex-wrap: nowrap;
+}
+
+.header-nav-links .nav-item {
+  flex-shrink: 0;
+}
+
+.header-nav-links .nav-link {
+  white-space: nowrap;
+}
+
 .search-box {
   background: #e9ecef;
   padding: 6px 12px;
