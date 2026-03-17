@@ -3,8 +3,9 @@
     <div class="container-fluid px-4">
 
       <!-- Logo -->
-      <router-link to="/" class="navbar-brand fw-bold fs-4">
-        FASHION
+      <router-link to="/" class="navbar-brand d-flex align-items-center gap-2 text-decoration-none text-dark">
+        <img src="/logo.png" alt="Doller Shope" class="header-logo" />
+        <span class="fw-bold fs-4"></span>
       </router-link>
 
       <!-- Mobile Toggle Button -->
@@ -22,6 +23,12 @@
 
         <!-- Center Menu -->
         <ul class="navbar-nav mx-auto text-center gap-lg-4">
+          <li class="nav-item">
+            <router-link to="/" class="nav-link">Home</router-link>
+          </li>
+          <li class="nav-item">
+            <router-link to="/shop" class="nav-link">Shop</router-link>
+          </li>
           <li class="nav-item">
             <router-link to="/men" class="nav-link">Men</router-link>
           </li>
@@ -238,5 +245,11 @@ onMounted(async () => {
   place-items: center;
   font-size: 12px;
   font-weight: 700;
+}
+
+.header-logo {
+  height: 42px;
+  width: auto;
+  object-fit: contain;
 }
 </style>

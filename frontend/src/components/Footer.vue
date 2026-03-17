@@ -4,7 +4,7 @@
       <div class="row">
 
         <div class="col-md-4">
-          <h5>E-Shop</h5>
+          <h5>Doller Shope</h5>
           <p>Your trusted online clothing store.</p>
         </div>
 
@@ -19,8 +19,8 @@
 
         <div class="col-md-4">
           <h5>Contact</h5>
-          <p>Email: info@eshop.com</p>
-          <p>Phone: +92 300 0000000</p>
+          <p>Email: muhammadashan1714@gmail.com</p>
+          <p>Phone: +923060297685</p>
         </div>
 
       </div>
@@ -28,7 +28,7 @@
       <hr class="bg-light">
 
       <div class="text-center">
-        © 2026 E-Shop. All Rights Reserved.
+        © 2026 2-Doller Shope. All Rights Reserved.
       </div>
     </div>
   </footer>

@@ -23,7 +23,7 @@
                   <i class="bi bi-bag"></i>
                 </div>
                 <div>
-                  <div class="fw-semibold">FASHION</div>
+                  <div class="fw-semibold">Doller Shope</div>
                   <div class="text-muted small">Since 2026</div>
                 </div>
               </div>
