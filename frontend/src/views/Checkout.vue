@@ -1,5 +1,5 @@
 <template>
-  <div class="container py-5">
+  <div class="container py-3 py-md-5 checkout-page px-3 px-md-0">
     <div class="d-flex align-items-center justify-content-between mb-4">
       <h3 class="fw-semibold mb-0">Checkout</h3>
     </div>
@@ -269,5 +269,25 @@ onMounted(async () => {
   border: 1px solid #e9ecef;
   border-radius: 16px;
   background: #fff;
+}
+
+.checkout-page h3 {
+  font-size: 1.25rem;
+}
+
+@media (min-width: 768px) {
+  .checkout-page h3 {
+    font-size: 1.5rem;
+  }
+}
+
+@media (max-width: 576px) {
+  .review-container .d-flex.gap-3 {
+    flex-direction: column;
+  }
+
+  .review-container .d-flex.gap-3 .btn {
+    width: 100%;
+  }
 }
 </style>

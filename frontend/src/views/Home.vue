@@ -15,20 +15,20 @@
     </section>
 
     <!-- Category Section -->
-    <section class="py-5 bg-light">
-      <div class="container">
+    <section class="py-4 py-md-5 bg-light">
+      <div class="container px-3 px-md-0">
         <ShopbyCategory />
       </div>
     </section>
 
     <!-- Featured Products -->
-    <section class="py-5">
-      <div class="container">
+    <section class="py-4 py-md-5">
+      <div class="container px-3 px-md-0">
         <h2 class="section-title text-center mb-5">Featured Products</h2>
 
         <div class="row">
           <div
-            class="col-lg-3 col-md-4 col-sm-6 mb-4"
+            class="col-6 col-lg-3 col-md-4 col-sm-6 mb-3 mb-md-4"
             v-for="product in products"
             :key="product.id"
           >
@@ -99,7 +99,9 @@ export default {
 
 <style scoped>
 .hero {
+  min-height: 50vh;
   height: 100vh;
+  max-height: 100dvh;
   background-image: url("https://images.unsplash.com/photo-1441986300917-64674bd600d8");
   background-size: cover;
   background-position: center;
@@ -163,16 +165,42 @@ export default {
 }
 
 @media (max-width: 768px) {
+  .hero {
+    min-height: 60vh;
+  }
+
   .hero-content {
-    padding-left: 30px;
+    padding: 20px;
+    padding-left: 24px;
+    max-width: 100%;
   }
 
   .hero-content h1 {
-    font-size: 36px;
+    font-size: 28px;
   }
 
   .hero-content p {
-    font-size: 16px;
+    font-size: 14px;
+    margin: 16px 0;
+  }
+
+  .shop-btn {
+    padding: 10px 20px;
+    font-size: 14px;
+  }
+
+  .section-title {
+    font-size: 24px;
+  }
+}
+
+@media (max-width: 480px) {
+  .hero-content h1 {
+    font-size: 24px;
+  }
+
+  .hero-content p {
+    font-size: 13px;
   }
 }
 

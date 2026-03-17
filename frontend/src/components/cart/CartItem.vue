@@ -33,17 +33,32 @@ defineProps({
 
 <style scoped>
 .cart-item {
-  padding: 18px;
+  padding: 12px;
   border: 1px solid #e9ecef;
   border-radius: 16px;
   background: #fff;
 }
 
+@media (min-width: 768px) {
+  .cart-item {
+    padding: 18px;
+  }
+}
+
 .cart-image {
-  width: 90px;
-  height: 110px;
+  width: 80px;
+  height: 100px;
+  min-width: 80px;
   object-fit: cover;
   border-radius: 12px;
+}
+
+@media (min-width: 768px) {
+  .cart-image {
+    width: 90px;
+    height: 110px;
+    min-width: 90px;
+  }
 }
 
 .quantity-control {

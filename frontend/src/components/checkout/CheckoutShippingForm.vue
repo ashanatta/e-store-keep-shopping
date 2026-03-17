@@ -89,6 +89,12 @@ defineEmits(['continue'])
   background: #fff;
 }
 
+@media (max-width: 576px) {
+  .form-card {
+    padding: 1rem !important;
+  }
+}
+
 .form-control-lg {
   background: #f6f7f9;
   border: none;

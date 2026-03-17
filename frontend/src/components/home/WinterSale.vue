@@ -64,15 +64,38 @@ onMounted(fetchBanner)
   color: white;
 }
 
+.winter-sale .container {
+  padding-left: 1rem;
+  padding-right: 1rem;
+}
+
+@media (min-width: 768px) {
+  .winter-sale .container {
+    padding-left: 12px;
+    padding-right: 12px;
+  }
+}
+
 .sale-text h2 {
-  font-size: 42px;
+  font-size: 28px;
   font-weight: 700;
 }
 
 .sale-text p {
-  font-size: 18px;
-  margin: 20px 0;
+  font-size: 15px;
+  margin: 16px 0;
   opacity: 0.9;
+}
+
+@media (min-width: 768px) {
+  .sale-text h2 {
+    font-size: 42px;
+  }
+
+  .sale-text p {
+    font-size: 18px;
+    margin: 20px 0;
+  }
 }
 
 .sale-btn {
@@ -107,10 +130,14 @@ onMounted(fetchBanner)
   transform: scale(1.05);
 }
 
-/* Responsive */
-@media (max-width: 768px) {
+@media (max-width: 576px) {
   .sale-text h2 {
-    font-size: 32px;
+    font-size: 24px;
+  }
+
+  .sale-btn {
+    padding: 10px 24px;
+    font-size: 0.9rem;
   }
 }
 
