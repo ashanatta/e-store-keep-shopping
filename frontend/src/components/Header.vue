@@ -71,11 +71,12 @@
             <template v-else>
               <div class="dropdown">
                 <button
-                  class="btn btn-link text-decoration-none dropdown-toggle p-0 d-flex align-items-center"
+                  class="btn btn-link text-decoration-none p-0 d-flex align-items-center avatar-dropdown-btn"
                   data-bs-toggle="dropdown"
                   aria-expanded="false"
+                  aria-haspopup="true"
                 >
-                  <div class="avatar-initial me-2">{{ initial }}</div>
+                  <div class="avatar-initial">{{ initial }}</div>
                 </button>
                 <ul class="dropdown-menu dropdown-menu-end shadow-sm border-0 mt-2 p-2">
                   <li class="mb-1">
@@ -189,7 +190,7 @@ onMounted(async () => {
   padding: 6px 12px;
   border-radius: 10px;
   width: 500px; 
-  margin-right: 150px;
+  margin-right: 24px;
 }
 
 .search-box input {
@@ -258,6 +259,14 @@ onMounted(async () => {
   place-items: center;
   font-size: 12px;
   font-weight: 700;
+}
+
+.avatar-dropdown-btn {
+  cursor: pointer;
+}
+
+.avatar-dropdown-btn::after {
+  display: none;
 }
 
 .header-logo {
