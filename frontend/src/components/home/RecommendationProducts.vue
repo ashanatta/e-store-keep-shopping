@@ -1,6 +1,6 @@
 <template>
   <div class="container mt-4">
-    <h4>Recommended Products</h4>
+    <h4>Users like you also liked this</h4>
 
     <div class="row">
       <div
@@ -68,15 +68,14 @@ export default {
   methods: {
     async fetchRecommended() {
       try {
-        const response = await axios.get('/products')
-        // Take random 4 products or specific ones
-        this.products = response.data.slice(0, 4).map(p => ({
+        const response = await axios.get('/recommendations/users-like-you', { params: { limit: 4 } })
+        this.products = (response.data || []).map(p => ({
           ...p,
           image: getImageUrl(p.image),
-          displayPrice: Number(p.final_price || p.min_variant_price || 0) || null,
+          displayPrice: Number(p.final_price ?? p.min_variant_price ?? 0) || null,
           originalPrice: Boolean(p.is_on_sale) ? (Number(p.min_variant_price || 0) || null) : null,
-          rating: Number(p.reviews_avg_rating || 0),
-          reviews: Number(p.reviews_count || 0)
+          rating: Number(p.reviews_avg_rating ?? 0),
+          reviews: Number(p.reviews_count ?? 0)
         }))
       } catch (error) {
         console.error('Error fetching recommendations:', error)
