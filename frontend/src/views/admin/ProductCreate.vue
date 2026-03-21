@@ -210,10 +210,13 @@ const handleSubmit = async () => {
     }))
     formData.append('variants', JSON.stringify(variantsPayload))
 
+    // Only append variant images if they exist
     variants.value.forEach((variant, index) => {
-      ;(variant.imageFiles || []).forEach((file) => {
-        formData.append(`variant_images[${index}][]`, file)
-      })
+      if (variant.imageFiles && variant.imageFiles.length > 0) {
+        variant.imageFiles.forEach((file) => {
+          formData.append(`variant_images[${index}][]`, file)
+        })
+      }
     })
 
     await axios.post('/products', formData, {
