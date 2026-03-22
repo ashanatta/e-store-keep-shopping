@@ -76,8 +76,10 @@ class OrderController extends Controller
                 // First, check and deduct stock for each item
                 $itemsToProcess = [];
                 foreach ($validated['items'] as $itemData) {
-                    if (isset($itemData['variantId'])) {
-                        $variant = ProductVariant::where('id', $itemData['variantId'])->lockForUpdate()->first();
+                    $variantId = $itemData['variantId'] ?? null;
+                    
+                    if ($variantId) {
+                        $variant = ProductVariant::where('id', $variantId)->lockForUpdate()->first();
                         
                         if (!$variant) {
                             throw new \Exception("Product variant not found.");
