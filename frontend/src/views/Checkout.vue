@@ -180,6 +180,36 @@ watch([currentStep, () => paymentDetails.value.method], async ([newStep, newMeth
 
 const handlePlaceOrder = async () => {
   if (isProcessing.value) return
+  
+  // Frontend Validation
+  if (!items.value || items.value.length === 0) {
+    toastError("Your cart is empty.")
+    router.push('/cart')
+    return
+  }
+
+  const s = shippingDetails.value
+   if (!s.fullName || !s.email || !s.phoneNumber || !s.streetAddress || !s.city || !s.state || !s.zipCode || !s.country) {
+     toastError("Please fill in all shipping details.")
+     currentStep.value = "shipping"
+     return
+   }
+   
+   // Basic email validation
+   const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
+   if (!emailRegex.test(s.email)) {
+     toastError("Please enter a valid email address.")
+     currentStep.value = "shipping"
+     return
+   }
+  
+  const p = paymentDetails.value
+  if (p.method === 'card' && (!p.cardNumber || !p.cardName || !p.expiry || !p.cvv)) {
+    toastError("Please fill in all card details.")
+    currentStep.value = "payment"
+    return
+  }
+
   isProcessing.value = true
 
   try {
@@ -248,7 +278,14 @@ const handlePlaceOrder = async () => {
     router.push(`/orders/${order.id}`)
   } catch (err) {
     console.error('Error placing order:', err)
-    toastError(err.response?.data?.message || "Failed to place order. Please try again.")
+    
+    // Extract validation errors if they exist
+    if (err.response?.status === 422 && err.response?.data?.errors) {
+      const firstError = Object.values(err.response.data.errors)[0][0]
+      toastError(firstError)
+    } else {
+      toastError(err.response?.data?.message || "Failed to place order. Please try again.")
+    }
   } finally {
     isProcessing.value = false
   }
