@@ -277,12 +277,23 @@ const handlePlaceOrder = async () => {
     await clearCart()
     router.push(`/orders/${order.id}`)
   } catch (err) {
-    console.error('Error placing order:', err)
+    console.error('Full Error Object:', err)
+    if (err.response) {
+      console.error('Error Response Data:', err.response.data)
+      console.error('Error Response Status:', err.response.status)
+      console.error('Error Response Headers:', err.response.headers)
+    }
     
     // Extract validation errors if they exist
-    if (err.response?.status === 422 && err.response?.data?.errors) {
-      const firstError = Object.values(err.response.data.errors)[0][0]
-      toastError(firstError)
+    if (err.response?.status === 422) {
+      if (err.response.data?.errors) {
+        const firstError = Object.values(err.response.data.errors)[0][0]
+        toastError(firstError)
+      } else if (err.response.data?.message) {
+        toastError(err.response.data.message)
+      } else {
+        toastError("Invalid order details. Please check your information.")
+      }
     } else {
       toastError(err.response?.data?.message || "Failed to place order. Please try again.")
     }

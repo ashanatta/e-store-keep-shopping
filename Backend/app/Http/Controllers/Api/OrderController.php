@@ -11,6 +11,9 @@ use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Str;
 
+use Illuminate\Support\Facades\Log;
+use Illuminate\Validation\ValidationException;
+
 class OrderController extends Controller
 {
     private $stripeKey;
@@ -39,35 +42,43 @@ class OrderController extends Controller
      */
     public function store(Request $request)
     {
-        $validated = $request->validate([
-            'shipping' => 'required|array',
-            'shipping.fullName' => 'required|string',
-            'shipping.email' => 'required|email',
-            'shipping.phoneNumber' => 'required|string',
-            'shipping.streetAddress' => 'required|string',
-            'shipping.city' => 'required|string',
-            'shipping.state' => 'required|string',
-            'shipping.zipCode' => 'required|string',
-            'shipping.country' => 'required|string',
-            
-            'payment' => 'required|array',
-            'payment.method' => 'required|string|in:card,stripe,paypal,cod',
-            
-            'items' => 'required|array|min:1',
-            'items.*.productId' => 'required',
-            'items.*.variantId' => 'nullable',
-            'items.*.quantity' => 'required|integer|min:1',
-            'items.*.price' => 'required|numeric',
-            'items.*.name' => 'required|string',
-            'items.*.size' => 'nullable|string',
-            'items.*.color' => 'nullable|string',
-            
-            'totals' => 'required|array',
-            'totals.subtotal' => 'required|numeric',
-            'totals.shipping' => 'required|numeric',
-            'totals.tax' => 'required|numeric',
-            'totals.total' => 'required|numeric',
-        ]);
+        try {
+            $validated = $request->validate([
+                'shipping' => 'required|array',
+                'shipping.fullName' => 'required|string',
+                'shipping.email' => 'required|email',
+                'shipping.phoneNumber' => 'required|string',
+                'shipping.streetAddress' => 'required|string',
+                'shipping.city' => 'required|string',
+                'shipping.state' => 'required|string',
+                'shipping.zipCode' => 'required|string',
+                'shipping.country' => 'required|string',
+                
+                'payment' => 'required|array',
+                'payment.method' => 'required|string|in:card,stripe,paypal,cod',
+                
+                'items' => 'required|array|min:1',
+                'items.*.productId' => 'required',
+                'items.*.variantId' => 'nullable',
+                'items.*.quantity' => 'required|integer|min:1',
+                'items.*.price' => 'required|numeric',
+                'items.*.name' => 'required|string',
+                'items.*.size' => 'nullable|string',
+                'items.*.color' => 'nullable|string',
+                
+                'totals' => 'required|array',
+                'totals.subtotal' => 'required|numeric',
+                'totals.shipping' => 'required|numeric',
+                'totals.tax' => 'required|numeric',
+                'totals.total' => 'required|numeric',
+            ]);
+        } catch (ValidationException $e) {
+            Log::error('Order Validation Failed:', [
+                'errors' => $e->errors(),
+                'request' => $request->all()
+            ]);
+            throw $e;
+        }
 
         try {
             return DB::transaction(function () use ($request, $validated) {
@@ -75,18 +86,19 @@ class OrderController extends Controller
                 
                 // First, check and deduct stock for each item
                 $itemsToProcess = [];
-                foreach ($validated['items'] as $itemData) {
+                foreach ($validated['items'] as $index => $itemData) {
                     $variantId = $itemData['variantId'] ?? null;
+                    $itemName = $itemData['name'] ?? "Item #$index";
                     
                     if ($variantId) {
                         $variant = ProductVariant::where('id', $variantId)->lockForUpdate()->first();
                         
                         if (!$variant) {
-                            throw new \Exception("Product variant not found.");
+                            throw new \Exception("Product variant not found for: $itemName");
                         }
 
                         if ($variant->stock < $itemData['quantity']) {
-                            throw new \Exception("Insufficient stock for product: {$itemData['name']}. Only {$variant->stock} left.");
+                            throw new \Exception("Insufficient stock for: $itemName. Only $variant->stock left.");
                         }
 
                         // Deduct stock
@@ -98,9 +110,8 @@ class OrderController extends Controller
                             'variant' => $variant
                         ];
                     } else {
-                        // If your system supports products without variants, handle that here.
-                        // For now, based on your current setup, we'll assume variants are used.
-                        throw new \Exception("Product variant is required for order.");
+                        // Check if the product actually has variants. If not, this is a misconfiguration or a missing variantId.
+                        throw new \Exception("A variant must be selected for item: $itemName");
                     }
                 }
 
@@ -126,6 +137,9 @@ class OrderController extends Controller
 
                 // Handle Stripe PaymentIntent
                 if ($validated['payment']['method'] === 'stripe') {
+                    if (!$this->stripeKey) {
+                        throw new \Exception("Stripe is not configured on the server. Please contact support.");
+                    }
                     try {
                         $stripeResponse = Http::withToken($this->stripeKey)
                             ->asForm()
