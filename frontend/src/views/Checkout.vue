@@ -177,8 +177,9 @@ const initStripe = async () => {
 // Initialize PayPal
 const initPayPal = () => {
   const clientId = import.meta.env.VITE_PAYPAL_CLIENT_ID
+  console.log('Attempting to initialize PayPal with Client ID:', clientId)
   if (!clientId) {
-    console.error("PayPal Client ID is missing from .env")
+    console.error("PayPal Client ID is missing from .env. Current env:", import.meta.env)
     return
   }
 
