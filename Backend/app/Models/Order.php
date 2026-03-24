@@ -22,6 +22,7 @@ class Order extends Model
         'payment_method',
         'stripe_payment_intent_id',
         'stripe_client_secret',
+        'paypal_order_id',
         'payment_status',
         'status',
         'subtotal',

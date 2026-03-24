@@ -56,14 +56,17 @@
                   <div id="card-errors" class="text-danger small mt-2" role="alert"></div>
                 </div>
               </div>
-              <p class="mb-0" v-else-if="paymentDetails.method === 'paypal'">PayPal</p>
+              <div v-else-if="paymentDetails.method === 'paypal'">
+                <p class="mb-2">PayPal Payment</p>
+                <div id="paypal-button-container" class="mt-3"></div>
+              </div>
               <p class="mb-0" v-else>Cash on Delivery</p>
             </div>
           </div>
 
           <div class="d-flex gap-3 mt-4">
             <button class="btn btn-outline-dark flex-grow-1 py-3 rounded-pill fw-semibold" @click="currentStep = 'payment'">Back</button>
-            <button class="btn btn-dark flex-grow-1 py-3 rounded-pill fw-semibold" @click="handlePlaceOrder">Place Order</button>
+            <button v-if="paymentDetails.method !== 'paypal'" class="btn btn-dark flex-grow-1 py-3 rounded-pill fw-semibold" @click="handlePlaceOrder">Place Order</button>
           </div>
         </div>
       </div>
@@ -94,6 +97,7 @@ const { success, error: toastError, info } = useToast()
 const stripe = ref(null)
 const elements = ref(null)
 const cardElement = ref(null)
+const paypalLoaded = ref(false)
 const isProcessing = ref(false)
 
 const currentStep = ref("shipping")
@@ -170,11 +174,104 @@ const initStripe = async () => {
   }
 }
 
-// Watch for step and method changes to init Stripe
+// Initialize PayPal
+const initPayPal = () => {
+  const clientId = import.meta.env.VITE_PAYPAL_CLIENT_ID
+  if (!clientId) {
+    console.error("PayPal Client ID is missing from .env")
+    return
+  }
+
+  if (window.paypal) {
+    renderPayPalButton()
+    return
+  }
+
+  const script = document.createElement("script")
+  script.src = `https://www.paypal.com/sdk/js?client-id=${clientId}&currency=USD`
+  script.addEventListener("load", () => {
+    paypalLoaded.value = true
+    renderPayPalButton()
+  })
+  document.body.appendChild(script)
+}
+
+const renderPayPalButton = () => {
+  if (!window.paypal || !document.getElementById('paypal-button-container')) return
+
+  window.paypal.Buttons({
+    createOrder: (data, actions) => {
+      return actions.order.create({
+        purchase_units: [{
+          amount: {
+            value: total.value.toFixed(2)
+          }
+        }]
+      })
+    },
+    onApprove: async (data, actions) => {
+      const order = await actions.order.capture()
+      console.log('PayPal order captured:', order)
+      await handlePayPalOrderSuccess(order.id)
+    },
+    onError: (err) => {
+      console.error('PayPal Error:', err)
+      toastError("PayPal payment failed. Please try again.")
+    }
+  }).render('#paypal-button-container')
+}
+
+const handlePayPalOrderSuccess = async (paypalOrderId) => {
+  isProcessing.value = true
+  try {
+    const orderData = {
+      shipping: shippingDetails.value,
+      payment: { method: 'paypal' },
+      items: items.value.map(item => ({
+        productId: item.productId,
+        variantId: item.variantId,
+        quantity: item.quantity,
+        price: item.price,
+        name: item.name,
+        size: item.size !== '-' ? item.size : null,
+        color: item.color !== '-' ? item.color : null
+      })),
+      totals: {
+        subtotal: subtotal.value,
+        shipping: 0,
+        tax: tax.value,
+        total: total.value
+      }
+    }
+
+    const response = await axios.post('/orders', orderData)
+    const order = response.data.order
+
+    // Confirm PayPal payment with backend
+    await axios.post(`/orders/${order.id}/confirm-payment`, {
+      payment_method: 'paypal',
+      paypal_order_id: paypalOrderId
+    })
+
+    success("Order placed successfully with PayPal!")
+    await fetchCart()
+    router.push({ name: 'OrderDetail', params: { id: order.id.toString() } })
+  } catch (err) {
+    console.error('Error processing PayPal order:', err)
+    toastError("Failed to save PayPal order. Please contact support.")
+  } finally {
+    isProcessing.value = false
+  }
+}
+
+// Watch for step and method changes to init Stripe or PayPal
 watch([currentStep, () => paymentDetails.value.method], async ([newStep, newMethod]) => {
-  if (newStep === "review" && newMethod === "stripe") {
-    // Small delay to ensure the DOM element is rendered
-    setTimeout(initStripe, 100)
+  if (newStep === "review") {
+    if (newMethod === "stripe") {
+      setTimeout(initStripe, 100)
+    } else if (newMethod === "paypal") {
+      setTimeout(initPayPal, 100)
+    }
   }
 })
 
@@ -237,6 +334,11 @@ const handlePlaceOrder = async () => {
     const response = await axios.post('/orders', orderData)
     const order = response.data.order
     console.log('Backend order response received:', order)
+    if (order.stripe_client_secret) {
+      console.log('Stripe Client Secret found:', order.stripe_client_secret.substring(0, 10) + '...')
+    } else if (paymentDetails.value.method === 'stripe') {
+      console.error('Stripe Client Secret is MISSING from order response!')
+    }
     
     if (!order || !order.id) {
       throw new Error("Order creation failed: No order ID received from server.")
