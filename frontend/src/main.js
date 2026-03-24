@@ -2,6 +2,7 @@ import './assets/main.css'
 import axios from 'axios'
 
 // Configure Axios at the very top
+axios.defaults.headers.common['Accept'] = 'application/json'
 axios.defaults.baseURL = import.meta.env.VITE_API_BASE_URL
 axios.defaults.withCredentials = true
 axios.defaults.withXSRFToken = true

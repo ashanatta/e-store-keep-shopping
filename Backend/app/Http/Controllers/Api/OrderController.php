@@ -202,6 +202,7 @@ class OrderController extends Controller
      */
     public function confirmPayment(Request $request, string $id)
     {
+        Log::info('OrderController@confirmPayment Called:', ['id' => $id]);
         $order = Order::findOrFail($id);
         
         if ($order->user_id !== $request->user()->id) {

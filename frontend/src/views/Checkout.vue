@@ -184,7 +184,6 @@ const handlePlaceOrder = async () => {
   // Frontend Validation
   if (!items.value || items.value.length === 0) {
     toastError("Your cart is empty.")
-    router.push('/cart')
     return
   }
 
@@ -211,6 +210,7 @@ const handlePlaceOrder = async () => {
   }
 
   isProcessing.value = true
+  console.log('handlePlaceOrder started with data:', { shipping: shippingDetails.value, payment: paymentDetails.value })
 
   try {
     const orderData = {
@@ -233,11 +233,18 @@ const handlePlaceOrder = async () => {
       }
     }
 
+    console.log('Sending order data to backend:', orderData)
     const response = await axios.post('/orders', orderData)
     const order = response.data.order
+    console.log('Backend order response received:', order)
+    
+    if (!order || !order.id) {
+      throw new Error("Order creation failed: No order ID received from server.")
+    }
 
     if (paymentDetails.value.method === 'stripe') {
       info("Processing secure payment...")
+      console.log('Stripe method selected, initializing confirmCardPayment...')
       
       const { error: stripeError, paymentIntent } = await stripe.value.confirmCardPayment(
         order.stripe_client_secret,
@@ -252,7 +259,7 @@ const handlePlaceOrder = async () => {
                 city: shippingDetails.value.city,
                 state: shippingDetails.value.state,
                 postal_code: shippingDetails.value.zipCode,
-                country: 'US' // Adjust as needed
+                country: 'US'
               }
             }
           }
@@ -260,24 +267,33 @@ const handlePlaceOrder = async () => {
       )
 
       if (stripeError) {
-        toastError(stripeError.message)
+        console.error('Stripe Error:', stripeError)
+        toastError(stripeError.message || "Stripe payment failed.")
         isProcessing.value = false
         return
       }
 
+      console.log('Stripe payment intent result:', paymentIntent)
       if (paymentIntent.status === 'succeeded') {
         // Confirm payment with backend
+        console.log('Payment succeeded, confirming with backend...')
         await axios.post(`/orders/${order.id}/confirm-payment`)
         success("Payment successful! Order placed.")
+      } else if (paymentIntent.status === 'processing') {
+        info("Your payment is processing.")
+      } else {
+        toastError(`Payment status: ${paymentIntent.status}. Please check your order status.`)
       }
     } else {
       success("Order placed successfully!")
     }
 
-    await clearCart()
-    router.push(`/orders/${order.id}`)
+    // Navigation should happen after order is confirmed/processed
+    console.log('Clearing cart and navigating to order detail page for ID:', order.id)
+    await fetchCart() // Refresh cart state (should be empty)
+    router.push({ name: 'OrderDetail', params: { id: order.id.toString() } })
   } catch (err) {
-    console.error('Full Error Object:', err)
+    console.error('Full Error Object in handlePlaceOrder:', err)
     if (err.response) {
       console.error('Error Response Data:', err.response.data)
       console.error('Error Response Status:', err.response.status)
