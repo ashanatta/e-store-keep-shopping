@@ -185,6 +185,9 @@ class OrderController extends Controller
                 // Clear the user's cart after successful order
                 $user->cartItems()->delete();
 
+                // Refresh the order to ensure all fields like stripe_client_secret are loaded
+                $order->refresh();
+
                 return response()->json([
                     'message' => 'Order placed successfully',
                     'order' => $order->load('items')
@@ -202,11 +205,23 @@ class OrderController extends Controller
      */
     public function confirmPayment(Request $request, string $id)
     {
-        Log::info('OrderController@confirmPayment Called:', ['id' => $id]);
+        Log::info('OrderController@confirmPayment Called:', ['id' => $id, 'payment_method' => $request->payment_method]);
         $order = Order::findOrFail($id);
         
         if ($order->user_id !== $request->user()->id) {
             return response()->json(['message' => 'Unauthorized'], 403);
+        }
+
+        // Handle PayPal Confirmation
+        if ($request->payment_method === 'paypal' && $request->paypal_order_id) {
+            $order->update([
+                'paypal_order_id' => $request->paypal_order_id,
+                'payment_status' => 'paid',
+            ]);
+            return response()->json([
+                'message' => 'PayPal payment confirmed successfully',
+                'order' => $order
+            ]);
         }
 
         if ($order->payment_method !== 'stripe') {
