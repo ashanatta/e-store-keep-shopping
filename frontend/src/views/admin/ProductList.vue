@@ -47,6 +47,7 @@
 import { ref, onMounted } from 'vue'
 import axios from 'axios'
 import { getImageUrl } from '@/utils/imageUrl'
+import Swal from 'sweetalert2'
 
 const products = ref([])
 
@@ -63,19 +64,46 @@ const fetchProducts = async () => {
     }))
   } catch (error) {
     console.error('Error fetching products:', error)
-    alert('Failed to fetch products.')
+    Swal.fire({
+      title: 'Error',
+      text: 'Failed to fetch products.',
+      icon: 'error',
+      confirmButtonColor: '#dc3545',
+    })
   }
 }
 
 const handleDelete = async (id) => {
-  if (confirm(`Are you sure you want to delete product with ID: ${id}?`)) {
+  const result = await Swal.fire({
+    title: 'Are you sure?',
+    text: `You are about to delete product with ID: ${id}. This action cannot be undone!`,
+    icon: 'warning',
+    showCancelButton: true,
+    confirmButtonColor: '#dc3545',
+    cancelButtonColor: '#6c757d',
+    confirmButtonText: 'Yes, delete it!'
+  })
+
+  if (result.isConfirmed) {
     try {
       await axios.delete(`/products/${id}`)
       products.value = products.value.filter(product => product.id !== id)
-      alert('Product deleted successfully!')
+      
+      Swal.fire({
+        title: 'Deleted!',
+        text: 'Product deleted successfully!',
+        icon: 'success',
+        timer: 2000,
+        showConfirmButton: false
+      })
     } catch (error) {
       console.error('Error deleting product:', error)
-      alert('Failed to delete product.')
+      Swal.fire({
+        title: 'Error',
+        text: 'Failed to delete product.',
+        icon: 'error',
+        confirmButtonColor: '#dc3545',
+      })
     }
   }
 }

@@ -76,6 +76,7 @@ import { ref, onMounted, nextTick, onUnmounted, watch } from 'vue'
 import axios from 'axios'
 import { useAuth } from '@/composables/useAuth'
 import echo from '@/utils/echo'
+import Swal from 'sweetalert2'
 
 const { user: currentUser, isAuthenticated } = useAuth()
 const isOpen = ref(false)
@@ -89,7 +90,13 @@ const unreadTotal = ref(0)
 
 const toggleChat = async () => {
   if (!isAuthenticated.value) {
-    alert('Please login to chat with support.')
+    Swal.fire({
+      title: 'Login Required',
+      text: 'Please login to chat with support.',
+      icon: 'info',
+      confirmButtonText: 'OK',
+      confirmButtonColor: '#212529', // Matching dark theme
+    })
     return
   }
   
