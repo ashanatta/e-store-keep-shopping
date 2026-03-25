@@ -74,6 +74,7 @@
 <script setup>
 import { ref, onMounted } from 'vue'
 import axios from 'axios'
+import Swal from 'sweetalert2'
 
 const sizes = ref([])
 const newSize = ref({ name: '', code: '' })
@@ -86,7 +87,12 @@ const fetchSizes = async () => {
     sizes.value = response.data
   } catch (error) {
     console.error('Error fetching sizes:', error)
-    alert('Failed to fetch sizes.')
+    Swal.fire({
+      title: 'Error',
+      text: 'Failed to fetch sizes.',
+      icon: 'error',
+      confirmButtonColor: '#dc3545',
+    })
   }
 }
 
@@ -95,10 +101,22 @@ const handleAdd = async () => {
     const response = await axios.post('/sizes', newSize.value)
     sizes.value.push(response.data)
     newSize.value = { name: '', code: '' }
-    alert('Size added successfully!')
+    
+    Swal.fire({
+      title: 'Success!',
+      text: 'Size added successfully!',
+      icon: 'success',
+      timer: 2000,
+      showConfirmButton: false
+    })
   } catch (error) {
     console.error('Error adding size:', error)
-    alert('Failed to add size.')
+    Swal.fire({
+      title: 'Error',
+      text: 'Failed to add size.',
+      icon: 'error',
+      confirmButtonColor: '#dc3545',
+    })
   }
 }
 
@@ -120,22 +138,56 @@ const saveEdit = async (id) => {
       sizes.value[index] = { ...editData.value, id }
     }
     editingId.value = null
-    alert('Size updated successfully!')
+    
+    Swal.fire({
+      title: 'Updated!',
+      text: 'Size updated successfully!',
+      icon: 'success',
+      timer: 2000,
+      showConfirmButton: false
+    })
   } catch (error) {
     console.error('Error updating size:', error)
-    alert('Failed to update size.')
+    Swal.fire({
+      title: 'Error',
+      text: 'Failed to update size.',
+      icon: 'error',
+      confirmButtonColor: '#dc3545',
+    })
   }
 }
 
 const remove = async (id) => {
-  if (confirm('Are you sure you want to delete this size?')) {
+  const result = await Swal.fire({
+    title: 'Are you sure?',
+    text: "You want to delete this size?",
+    icon: 'warning',
+    showCancelButton: true,
+    confirmButtonColor: '#dc3545',
+    cancelButtonColor: '#6c757d',
+    confirmButtonText: 'Yes, delete it!'
+  })
+
+  if (result.isConfirmed) {
     try {
       await axios.delete(`/sizes/${id}`)
       sizes.value = sizes.value.filter(s => s.id !== id)
-      alert('Size deleted successfully!')
+      
+      Swal.fire({
+        title: 'Deleted!',
+        text: 'Size deleted successfully!',
+        icon: 'success',
+        timer: 2000,
+        showConfirmButton: false
+      })
     } catch (error) {
       console.error('Error deleting size:', error)
-      alert('Failed to delete size.')
+      Swal.fire({
+        title: 'Error',
+        text: 'Failed to delete size.',
+        icon: 'error',
+        confirmButtonColor: '#dc3545',
+      })
     }
   }
 }

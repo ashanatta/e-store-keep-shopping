@@ -85,13 +85,12 @@
 <script setup>
 import { ref, onMounted } from 'vue'
 import axios from 'axios'
-import { useToast } from '@/composables/useToast.js'
+import Swal from 'sweetalert2'
 
 const colors = ref([])
 const newColor = ref({ name: '', code: '#000000' })
 const editingId = ref(null)
 const editData = ref({ name: '', code: '' })
-const { success, error: toastError } = useToast()
 
 const normalizeHexColor = (value) => {
   if (!value) return '#000000'
@@ -114,7 +113,12 @@ const fetchColors = async () => {
     colors.value = response.data
   } catch (err) {
     console.error('Error fetching colors:', err)
-    toastError('Failed to fetch colors.')
+    Swal.fire({
+      title: 'Error',
+      text: 'Failed to fetch colors.',
+      icon: 'error',
+      confirmButtonColor: '#dc3545',
+    })
   }
 }
 
@@ -127,10 +131,22 @@ const handleAdd = async () => {
     const response = await axios.post('/colors', payload)
     colors.value.push(response.data)
     newColor.value = { name: '', code: '#000000' }
-    success('Color added successfully!')
+    
+    Swal.fire({
+      title: 'Success!',
+      text: 'Color added successfully!',
+      icon: 'success',
+      timer: 2000,
+      showConfirmButton: false
+    })
   } catch (err) {
     console.error('Error adding color:', err)
-    toastError('Failed to add color.')
+    Swal.fire({
+      title: 'Error',
+      text: 'Failed to add color.',
+      icon: 'error',
+      confirmButtonColor: '#dc3545',
+    })
   }
 }
 
@@ -159,22 +175,56 @@ const saveEdit = async (id) => {
       colors.value[index] = { ...payload, id }
     }
     editingId.value = null
-    success('Color updated successfully!')
+    
+    Swal.fire({
+      title: 'Updated!',
+      text: 'Color updated successfully!',
+      icon: 'success',
+      timer: 2000,
+      showConfirmButton: false
+    })
   } catch (err) {
     console.error('Error updating color:', err)
-    toastError('Failed to update color.')
+    Swal.fire({
+      title: 'Error',
+      text: 'Failed to update color.',
+      icon: 'error',
+      confirmButtonColor: '#dc3545',
+    })
   }
 }
 
 const remove = async (id) => {
-  if (confirm('Are you sure you want to delete this color?')) {
+  const result = await Swal.fire({
+    title: 'Are you sure?',
+    text: "You want to delete this color?",
+    icon: 'warning',
+    showCancelButton: true,
+    confirmButtonColor: '#dc3545',
+    cancelButtonColor: '#6c757d',
+    confirmButtonText: 'Yes, delete it!'
+  })
+
+  if (result.isConfirmed) {
     try {
       await axios.delete(`/colors/${id}`)
       colors.value = colors.value.filter(c => c.id !== id)
-      success('Color deleted successfully!')
+      
+      Swal.fire({
+        title: 'Deleted!',
+        text: 'Color deleted successfully!',
+        icon: 'success',
+        timer: 2000,
+        showConfirmButton: false
+      })
     } catch (err) {
       console.error('Error deleting color:', err)
-      toastError('Failed to delete color.')
+      Swal.fire({
+        title: 'Error',
+        text: 'Failed to delete color.',
+        icon: 'error',
+        confirmButtonColor: '#dc3545',
+      })
     }
   }
 }

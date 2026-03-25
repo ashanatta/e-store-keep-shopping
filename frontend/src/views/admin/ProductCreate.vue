@@ -102,6 +102,7 @@ import { onMounted, ref } from 'vue'
 import { useRouter } from 'vue-router'
 import axios from 'axios'
 import { useCategories } from '@/composables/useCategories.js'
+import Swal from 'sweetalert2'
 
 const router = useRouter()
 const { categories, fetchCategories } = useCategories()
@@ -148,7 +149,12 @@ const fetchColorsAndSizes = async () => {
 
 const addVariant = () => {
   if (!newVariant.value.color_id && !newVariant.value.size_id) {
-    alert('Please select at least a color or a size')
+    Swal.fire({
+      title: 'Variant Error',
+      text: 'Please select at least a color or a size',
+      icon: 'warning',
+      confirmButtonColor: '#0d6efd',
+    })
     return
   }
   
@@ -159,12 +165,22 @@ const addVariant = () => {
   )
   
   if (exists) {
-    alert('This variant already exists')
+    Swal.fire({
+      title: 'Variant Exists',
+      text: 'This variant already exists',
+      icon: 'info',
+      confirmButtonColor: '#0d6efd',
+    })
     return
   }
 
   if (!newVariant.value.price || Number(newVariant.value.price) <= 0) {
-    alert('Please add a valid variant price')
+    Swal.fire({
+      title: 'Price Required',
+      text: 'Please add a valid variant price',
+      icon: 'warning',
+      confirmButtonColor: '#0d6efd',
+    })
     return
   }
 
@@ -224,11 +240,24 @@ const handleSubmit = async () => {
         'Content-Type': 'multipart/form-data',
       },
     })
-    alert('Product added successfully!')
+    
+    Swal.fire({
+      title: 'Success!',
+      text: 'Product added successfully!',
+      icon: 'success',
+      timer: 2000,
+      showConfirmButton: false
+    })
+    
     router.push('/admin/products')
   } catch (error) {
     console.error('Error adding product:', error)
-    alert('Failed to add product.')
+    Swal.fire({
+      title: 'Error',
+      text: 'Failed to add product.',
+      icon: 'error',
+      confirmButtonColor: '#dc3545',
+    })
   }
 }
 
