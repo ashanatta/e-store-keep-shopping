@@ -64,6 +64,17 @@ async function login({ email, password }) {
   return response.data
 }
 
+async function loginWithGoogle(credential) {
+  await getCsrfCookie()
+  const response = await axios.post("/auth/google", {
+    credential,
+    device_name: "web"
+  })
+  setUser(response.data.user)
+  setToken(response.data.token)
+  return response.data
+}
+
 async function register({ name, email, password, password_confirmation }) {
   await getCsrfCookie()
   const response = await axios.post("/register", {
@@ -103,6 +114,7 @@ export function useAuth() {
     isAuthenticated: computed(() => !!state.token),
     isAdmin: computed(() => state.isAdmin),
     login,
+    loginWithGoogle,
     register,
     logout,
     refreshUser,

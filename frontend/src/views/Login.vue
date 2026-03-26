@@ -14,6 +14,15 @@
         </div>
         <button class="btn btn-dark w-100" type="submit">Login</button>
       </form>
+      
+      <div class="divider my-4 d-flex align-items-center">
+        <hr class="flex-grow-1">
+        <span class="px-2 text-muted small text-uppercase">Or</span>
+        <hr class="flex-grow-1">
+      </div>
+
+      <div id="google-signin-btn" class="d-flex justify-content-center"></div>
+
       <div class="text-center mt-3">
         <span class="text-muted">Don't have an account?</span>
         <router-link to="/register" class="ms-1">Register</router-link>
@@ -23,7 +32,7 @@
 </template>
 
 <script setup>
-import { ref } from "vue"
+import { ref, onMounted } from "vue"
 import { useRouter } from "vue-router"
 import { useAuth } from "@/composables/useAuth.js"
 
@@ -32,7 +41,31 @@ const password = ref("")
 const error = ref("")
 
 const router = useRouter()
-const { login } = useAuth()
+const { login, loginWithGoogle } = useAuth()
+
+onMounted(() => {
+  /* global google */
+  if (typeof google !== 'undefined') {
+    google.accounts.id.initialize({
+      client_id: import.meta.env.VITE_GOOGLE_CLIENT_ID,
+      callback: handleGoogleResponse
+    });
+    google.accounts.id.renderButton(
+      document.getElementById("google-signin-btn"),
+      { theme: "outline", size: "large", width: "100%" }
+    );
+  }
+})
+
+const handleGoogleResponse = async (response) => {
+  error.value = ""
+  try {
+    await loginWithGoogle(response.credential)
+    router.push("/")
+  } catch (err) {
+    error.value = err?.response?.data?.message || "Google Login failed"
+  }
+}
 
 const onSubmit = async () => {
   error.value = ""

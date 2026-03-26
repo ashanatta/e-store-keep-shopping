@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Api;
 use App\Http\Controllers\Controller;
 use App\Mail\UserRegisteredMail;
 use App\Models\User;
+use Google\Client as GoogleClient;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Log;
@@ -62,6 +63,39 @@ class AuthController extends Controller
         }
 
         $token = $user->createToken($data['device_name'] ?? 'api')->plainTextToken;
+
+        return response()->json([
+            'user' => array_merge($user->toArray(), ['is_admin' => $user->is_admin]),
+            'token' => $token,
+        ]);
+    }
+
+    public function googleLogin(Request $request)
+    {
+        $request->validate([
+            'credential' => 'required|string',
+            'device_name' => 'sometimes|string|max:255',
+        ]);
+
+        $client = new GoogleClient(['client_id' => config('services.google.client_id')]);
+        $payload = $client->verifyIdToken($request->credential);
+
+        if (!$payload) {
+            return response()->json(['message' => 'Invalid Google token'], 401);
+        }
+
+        $user = User::where('email', $payload['email'])->first();
+
+        if (!$user) {
+            // Create user if not exists
+            $user = User::create([
+                'name' => $payload['name'] ?? explode('@', $payload['email'])[0],
+                'email' => $payload['email'],
+                'password' => Hash::make(str()->random(24)),
+            ]);
+        }
+
+        $token = $user->createToken($request->device_name ?? 'google-auth')->plainTextToken;
 
         return response()->json([
             'user' => array_merge($user->toArray(), ['is_admin' => $user->is_admin]),
