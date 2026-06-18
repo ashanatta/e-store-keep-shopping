@@ -1,6 +1,5 @@
 <template>
   <div class="card product-card h-100">
-
     <router-link :to="`/product/${product.id}`">
       <div class="image-wrapper">
         <img :src="product.image" class="card-img-top" />
@@ -22,18 +21,25 @@
     </router-link>
 
     <div class="card-body">
-      <router-link :to="`/product/${product.id}`" class="text-dark text-decoration-none">
+      <router-link
+        :to="`/product/${product.id}`"
+        class="text-dark text-decoration-none"
+      >
         <h6 class="mb-1">{{ product.name }}</h6>
 
         <div class="mb-2 small text-muted">
-          <span class="text-warning">{{ renderStars(product.rating) }}</span> {{ product.rating.toFixed(1) }} ({{ product.reviews }})
+          <span class="text-warning">{{ renderStars(product.rating) }}</span>
+          {{ product.rating.toFixed(1) }} ({{ product.reviews }})
         </div>
 
         <div>
           <template v-if="product.displayPrice !== null">
             <span class="fw-bold">${{ product.displayPrice.toFixed(2) }}</span>
             <span
-              v-if="product.originalPrice && product.displayPrice !== product.originalPrice"
+              v-if="
+                product.originalPrice &&
+                product.displayPrice !== product.originalPrice
+              "
               class="text-muted text-decoration-line-through ms-2"
             >
               ${{ product.originalPrice.toFixed(2) }}
@@ -43,20 +49,19 @@
         </div>
       </router-link>
     </div>
-
   </div>
 </template>
 
 <script setup>
 defineProps({
-  product: Object
-})
+  product: Object,
+});
 
 const renderStars = (rating) => {
-  const filledStars = "★".repeat(Math.floor(rating))
-  const emptyStars = "☆".repeat(5 - Math.floor(rating))
-  return filledStars + emptyStars
-}
+  const filledStars = "★".repeat(Math.floor(rating));
+  const emptyStars = "☆".repeat(5 - Math.floor(rating));
+  return filledStars + emptyStars;
+};
 </script>
 
 <style scoped>
