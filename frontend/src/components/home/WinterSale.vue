@@ -2,14 +2,16 @@
   <section v-if="banner" class="winter-sale py-5">
     <div class="container">
       <div class="row align-items-center g-5">
-
         <!-- Text Side -->
         <div class="col-md-6 sale-text">
           <h2 class="animate-up">{{ banner.title }}</h2>
           <p class="animate-up delay-1">
             {{ banner.description }}
           </p>
-          <router-link to="/shop" class="sale-btn animate-up delay-2 text-decoration-none d-inline-block">
+          <router-link
+            to="/shop"
+            class="sale-btn animate-up delay-2 text-decoration-none d-inline-block"
+          >
             Shop Collection
           </router-link>
         </div>
@@ -17,46 +19,41 @@
         <!-- Image Side -->
         <div class="col-md-6">
           <div class="image-wrapper shadow-lg">
-            <img
-              :src="getImageUrl(banner.image)"
-              :alt="banner.title"
-            />
+            <img :src="getImageUrl(banner.image)" :alt="banner.title" />
           </div>
         </div>
-
       </div>
     </div>
   </section>
 </template>
 
-
 <script setup>
-import { ref, onMounted } from 'vue'
-import axios from 'axios'
-import { getImageUrl as resolveImageUrl } from '@/utils/imageUrl'
+import { ref, onMounted } from "vue";
+import axios from "axios";
+import { getImageUrl as resolveImageUrl } from "@/utils/imageUrl";
 
-const banner = ref(null)
+const banner = ref(null);
 
 const fetchBanner = async () => {
   try {
-    const response = await axios.get('/banners')
+    const response = await axios.get("/banners");
     // We'll use the most recent active banner for this section
     if (response.data.length > 0) {
-      banner.value = response.data[0]
+      banner.value = response.data[0];
     }
   } catch (error) {
-    console.error('Error fetching banner:', error)
+    console.error("Error fetching banner:", error);
   }
-}
+};
 
 const getImageUrl = (path) => {
-  if (path && (path.startsWith('http://') || path.startsWith('https://'))) {
-    return path
+  if (path && (path.startsWith("http://") || path.startsWith("https://"))) {
+    return path;
   }
-  return resolveImageUrl(path)
-}
+  return resolveImageUrl(path);
+};
 
-onMounted(fetchBanner)
+onMounted(fetchBanner);
 </script>
 
 <style scoped>
@@ -147,8 +144,12 @@ onMounted(fetchBanner)
   animation: slideUp 0.8s cubic-bezier(0.23, 1, 0.32, 1) both;
 }
 
-.delay-1 { animation-delay: 0.2s; }
-.delay-2 { animation-delay: 0.4s; }
+.delay-1 {
+  animation-delay: 0.2s;
+}
+.delay-2 {
+  animation-delay: 0.4s;
+}
 
 @keyframes slideUp {
   from {

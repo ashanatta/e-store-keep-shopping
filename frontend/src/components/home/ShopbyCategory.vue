@@ -17,7 +17,10 @@
                 :alt="category.name"
                 class="category-image"
               />
-              <div v-else class="category-image bg-light d-flex align-items-center justify-content-center">
+              <div
+                v-else
+                class="category-image bg-light d-flex align-items-center justify-content-center"
+              >
                 <i class="bi bi-image text-muted fs-1"></i>
               </div>
 
@@ -25,29 +28,26 @@
 
               <div class="content">
                 <h3>{{ category.name }}</h3>
-                <button class="shop-btn">
-                  Shop Now →
-                </button>
+                <button class="shop-btn">Shop Now →</button>
               </div>
             </div>
           </router-link>
         </div>
       </div>
-
     </div>
   </section>
 </template>
 
 <script setup>
-import { onMounted } from "vue"
-import { useCategories } from "@/composables/useCategories.js"
-import { getImageUrl } from "@/utils/imageUrl"
+import { onMounted } from "vue";
+import { useCategories } from "@/composables/useCategories.js";
+import { getImageUrl } from "@/utils/imageUrl";
 
-const { categories, fetchCategories } = useCategories()
+const { categories, fetchCategories } = useCategories();
 
 onMounted(async () => {
-  await fetchCategories()
-})
+  await fetchCategories();
+});
 </script>
 
 <style scoped>
@@ -120,7 +120,7 @@ onMounted(async () => {
 .overlay {
   position: absolute;
   inset: 0;
-  background: linear-gradient(to top, rgba(0,0,0,0.6), transparent);
+  background: linear-gradient(to top, rgba(0, 0, 0, 0.6), transparent);
 }
 
 .content {

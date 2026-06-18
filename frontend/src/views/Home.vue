@@ -1,15 +1,19 @@
 <template>
   <div>
-
     <!-- Hero Section -->
     <section class="hero">
       <div class="overlay">
         <div class="hero-content">
           <h1>Spring Collection 2026</h1>
           <p>
-            Discover the latest trends in fashion. Up to 50% off on selected items.
+            Discover the latest trends in fashion. Up to 50% off on selected
+            items.
           </p>
-          <router-link to="/shop" class="shop-btn text-decoration-none d-inline-block">Shop Now →</router-link>
+          <router-link
+            to="/shop"
+            class="shop-btn text-decoration-none d-inline-block"
+            >Shop Now →</router-link
+          >
         </div>
       </div>
     </section>
@@ -44,11 +48,8 @@
     <div>
       <RecommendationProducts />
     </div>
-
-
   </div>
 </template>
-
 
 <script>
 import ShopbyCategory from "@/components/home/ShopbyCategory.vue";
@@ -64,7 +65,7 @@ export default {
     ShopbyCategory,
     FeaturedProduct,
     WinterSale,
-    RecommendationProducts
+    RecommendationProducts,
   },
   methods: {
     handleWishlist(id) {
@@ -72,28 +73,31 @@ export default {
     },
     async fetchProducts() {
       try {
-        const response = await axios.get('/products', { params: { limit: 8 } })
-        this.products = (response.data || []).map(p => ({
+        const response = await axios.get("/products", { params: { limit: 8 } });
+        this.products = (response.data || []).map((p) => ({
           ...p,
           image: getImageUrl(p.image),
-          displayPrice: Number(p.final_price || p.min_variant_price || 0) || null,
-          originalPrice: Boolean(p.is_on_sale) ? (Number(p.min_variant_price || 0) || null) : null,
+          displayPrice:
+            Number(p.final_price || p.min_variant_price || 0) || null,
+          originalPrice: Boolean(p.is_on_sale)
+            ? Number(p.min_variant_price || 0) || null
+            : null,
           rating: Number(p.reviews_avg_rating || 0),
-          reviews: Number(p.reviews_count || 0)
-        }))
+          reviews: Number(p.reviews_count || 0),
+        }));
       } catch (error) {
-        console.error('Error fetching featured products:', error)
+        console.error("Error fetching featured products:", error);
       }
-    }
+    },
   },
   mounted() {
-    this.fetchProducts()
+    this.fetchProducts();
   },
   data() {
     return {
-      products: []
-    }
-  }
+      products: [],
+    };
+  },
 };
 </script>
 
@@ -203,5 +207,4 @@ export default {
     font-size: 13px;
   }
 }
-
 </style>
