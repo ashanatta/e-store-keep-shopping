@@ -207,7 +207,9 @@ const formatTime = (dateStr) => {
 
 onMounted(() => {
   fetchActiveChats()
-  
+
+  if (!currentUser.value) return
+
   // Listen for incoming messages on admin's private channel
   console.log('AdminChat: Subscribing to private channel:', `chat.${currentUser.value.id}`)
   const channel = echo.private(`chat.${currentUser.value.id}`)

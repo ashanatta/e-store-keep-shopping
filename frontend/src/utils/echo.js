@@ -58,9 +58,28 @@ if (reverbKey && reverbHost) {
         console.error('Echo error: VITE_REVERB_APP_KEY or VITE_REVERB_HOST is missing. Real-time chat will not work in production.');
     }
     
-    // Provide a dummy object to prevent errors in other components
+    // Provide a dummy object to prevent errors in other components.
+    // Every channel method returns the channel itself so chained calls
+    // (channel.on(...).listen(...)) never throw — a throw inside a component's
+    // onMounted hook breaks the router view and freezes navigation.
+    const dummyChannel = {
+        on: () => dummyChannel,
+        listen: () => dummyChannel,
+        listenForWhisper: () => dummyChannel,
+        notification: () => dummyChannel,
+        stopListening: () => dummyChannel,
+        whisper: () => dummyChannel,
+        here: () => dummyChannel,
+        joining: () => dummyChannel,
+        leaving: () => dummyChannel,
+        error: () => dummyChannel,
+        subscribed: () => dummyChannel,
+    };
+
     echo = {
-        private: () => ({ listen: () => ({ on: () => ({}) }) }),
+        private: () => dummyChannel,
+        channel: () => dummyChannel,
+        join: () => dummyChannel,
         leave: () => {},
         leaveAll: () => {},
         connector: { pusher: { connection: { bind: () => {} } } }
