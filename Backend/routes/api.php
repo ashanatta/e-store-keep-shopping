@@ -15,6 +15,7 @@ use App\Http\Controllers\Api\OrderController;
 use App\Http\Controllers\Api\AdminCommerceController;
 use App\Http\Controllers\Api\BannerController;
 use App\Http\Controllers\Api\RecommendationController;
+use App\Http\Controllers\Api\TryOnController;
 use Illuminate\Support\Facades\Broadcast;
 use Illuminate\Support\Facades\Route;
 use Illuminate\Support\Facades\Storage;
@@ -74,6 +75,10 @@ Route::middleware(['auth:sanctum'])->group(function () {
     Route::get('/chat/active', [ChatController::class, 'getActiveChats']);
     Route::get('/chat/{userId}', [ChatController::class, 'getMessages']);
     Route::post('/chat', [ChatController::class, 'sendMessage']);
+
+    // AI virtual try-on (runs on a free, shared GPU quota, so starting one is rate limited)
+    Route::post('/try-on', [TryOnController::class, 'store'])->middleware('throttle:5,1');
+    Route::get('/try-on/{id}', [TryOnController::class, 'show'])->middleware('throttle:60,1');
 
     // Broadcasting Auth
     Broadcast::routes();

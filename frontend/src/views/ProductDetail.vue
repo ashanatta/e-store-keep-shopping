@@ -97,6 +97,15 @@
           <button class="wishlist-heart-btn" :class="{ active: inWishlist }" @click="toggleWishlist">♥</button>
         </div>
 
+        <button
+          v-if="selectedGarmentPath"
+          type="button"
+          class="btn btn-outline-dark w-100 mb-4 try-on-btn"
+          @click="openTryOn"
+        >
+          <i class="bi bi-stars me-2"></i>Try it on with AI
+        </button>
+
         <ul class="list-unstyled small text-muted">
           <li class="mb-1">Free shipping on orders over $100</li>
           <li class="mb-1">30-day free returns</li>
@@ -185,6 +194,15 @@
         </div>
       </div>
     </div>
+
+    <VirtualTryOn
+      v-if="showTryOn"
+      :product-id="product.id"
+      :product-name="product.name"
+      :garment-path="selectedGarmentPath"
+      :garment-url="selectedImage"
+      @close="showTryOn = false"
+    />
   </div>
 </template>
 
@@ -196,6 +214,7 @@ import { useAuth } from "@/composables/useAuth.js"
 import { useCart } from "@/composables/useCart.js"
 import { useWishlist } from "@/composables/useWishlist.js"
 import { useToast } from "@/composables/useToast.js"
+import VirtualTryOn from "@/components/product/VirtualTryOn.vue"
 
 const { success, error, warning } = useToast()
 
@@ -241,6 +260,9 @@ const addingToCart = ref(false)
 const addToCartSuccess = ref(false)
 const quantity = ref(1)
 const activeTab = ref("description")
+const showTryOn = ref(false)
+// Maps a displayed image URL back to the path stored in the database (needed by the try-on API)
+const imagePathByUrl = ref(new Map())
 
 const toId = (value) => {
   if (value === null || value === undefined || value === '') {
@@ -254,7 +276,16 @@ const fetchProduct = async () => {
   try {
     const productRes = await axios.get(`/products/${route.params.id}`)
     const data = productRes.data
-    
+
+    const pathMap = new Map()
+    if (data.image) pathMap.set(buildFileUrl(data.image), data.image)
+    ;(data.variants || []).forEach((variant) => {
+      (variant.images || []).forEach((img) => {
+        if (img.path) pathMap.set(buildFileUrl(img.path), img.path)
+      })
+    })
+    imagePathByUrl.value = pathMap
+
     // Transform data to match component structure
     product.value = {
       ...data,
@@ -488,6 +519,16 @@ const addSelectedToCart = async () => {
   }
 }
 
+const selectedGarmentPath = computed(() => imagePathByUrl.value.get(selectedImage.value) || "")
+
+const openTryOn = () => {
+  if (!isAuthenticated.value) {
+    warning("Please login to use virtual try-on.")
+    return
+  }
+  showTryOn.value = true
+}
+
 const toggleWishlist = async () => {
   if (!isAuthenticated.value) {
     warning("Please login to use wishlist.")
@@ -545,6 +586,7 @@ const increaseQty = () => {
 }
 
 watch(() => route.params.id, () => {
+  showTryOn.value = false
   selectedColorId.value = null
   selectedSizeId.value = null
   quantity.value = 1
