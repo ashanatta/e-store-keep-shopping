@@ -41,4 +41,10 @@ return [
         'redirect' => env('GOOGLE_REDIRECT_URL'),
     ],
 
+    // Python virtual try-on service (see /tryon-service)
+    'tryon' => [
+        'url' => env('TRYON_SERVICE_URL', 'http://127.0.0.1:8001'),
+        'secret' => env('TRYON_SERVICE_SECRET'),
+    ],
+
 ];
