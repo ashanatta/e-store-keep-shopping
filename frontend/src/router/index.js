@@ -82,6 +82,12 @@ const routes = [
 const router = createRouter({
   history: createWebHistory(),
   routes,
+  scrollBehavior(to, from, savedPosition) {
+    if (savedPosition) return savedPosition
+    // Keep position when only the query changes (e.g. search / filters)
+    if (to.path === from.path) return false
+    return { top: 0 }
+  },
 })
 
 router.beforeEach((to, from, next) => {

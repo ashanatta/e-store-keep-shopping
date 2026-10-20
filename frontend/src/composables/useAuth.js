@@ -27,6 +27,21 @@ function setToken(token) {
 
 setAuthHeader(state.token)
 
+// A token the server no longer accepts (revoked, or DB reset) leaves the UI
+// "logged in" while every protected call fails. Drop the stale session on 401.
+axios.interceptors.response.use(
+  (response) => response,
+  (error) => {
+    const sentToken = error?.config?.headers?.Authorization
+    if (error?.response?.status === 401 && sentToken && state.token) {
+      setUser(null)
+      setToken("")
+      error.sessionExpired = true
+    }
+    return Promise.reject(error)
+  }
+)
+
 function setUser(user) {
   state.user = user
   state.isAdmin = user ? user.is_admin : false
