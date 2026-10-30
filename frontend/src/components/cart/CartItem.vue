@@ -1,23 +1,32 @@
 <template>
-  <div class="cart-item d-flex flex-column flex-md-row align-items-md-center gap-3">
+  <div class="cart-item">
     <img :src="item.image" :alt="item.name" class="cart-image" />
-    <div class="flex-grow-1">
-      <div class="fw-semibold">{{ item.name }}</div>
-      <div class="text-muted small">{{ item.category }}</div>
-      <div class="text-muted small">
-        Size: {{ item.size }} • Color: {{ item.color }}
+    <div class="ci-body">
+      <div class="ci-top">
+        <div class="min-w-0">
+          <div class="ci-cat">{{ item.category }}</div>
+          <div class="ci-name">{{ item.name }}</div>
+          <div class="ci-variant">
+            <span>Size <strong>{{ item.size }}</strong></span>
+            <span>Color <strong>{{ item.color }}</strong></span>
+          </div>
+        </div>
+        <button type="button" class="remove-btn" aria-label="Remove item" @click="$emit('remove', item.id)">
+          <i class="bi bi-x-lg"></i>
+        </button>
       </div>
-      <div class="quantity-control mt-2">
-        <button type="button" class="qty-btn" @click="$emit('decrease', item.id)">-</button>
-        <span class="qty-value">{{ item.quantity }}</span>
-        <button type="button" class="qty-btn" @click="$emit('increase', item.id)">+</button>
+      <div class="ci-bottom">
+        <div class="quantity-control">
+          <button type="button" class="qty-btn" aria-label="Decrease quantity" :disabled="item.quantity <= 1" @click="$emit('decrease', item.id)">
+            <i class="bi bi-dash"></i>
+          </button>
+          <span class="qty-value">{{ item.quantity }}</span>
+          <button type="button" class="qty-btn" aria-label="Increase quantity" @click="$emit('increase', item.id)">
+            <i class="bi bi-plus"></i>
+          </button>
+        </div>
+        <div class="ci-price">${{ item.price ? parseFloat(item.price).toFixed(2) : '0.00' }}</div>
       </div>
-    </div>
-    <div class="d-flex align-items-center gap-3">
-      <div class="fw-semibold">${{ item.price ? parseFloat(item.price).toFixed(2) : '0.00' }}</div>
-      <button type="button" class="remove-btn" @click="$emit('remove', item.id)">
-        <i class="bi bi-trash3"></i>
-      </button>
     </div>
   </div>
 </template>
@@ -33,57 +42,150 @@ defineProps({
 
 <style scoped>
 .cart-item {
-  padding: 12px;
-  border: 1px solid #e9ecef;
-  border-radius: 16px;
+  display: flex;
+  gap: 16px;
+  padding: 14px;
+  border: 1px solid var(--line);
+  border-radius: var(--radius-lg);
   background: #fff;
+  transition: box-shadow 0.3s var(--ease);
+}
+
+.cart-item:hover {
+  box-shadow: var(--shadow);
 }
 
 @media (min-width: 768px) {
   .cart-item {
-    padding: 18px;
+    gap: 20px;
+    padding: 16px;
   }
 }
 
 .cart-image {
-  width: 80px;
-  height: 100px;
-  min-width: 80px;
+  width: 96px;
+  height: 120px;
+  flex-shrink: 0;
   object-fit: cover;
-  border-radius: 12px;
+  border-radius: 14px;
+  background: var(--ivory);
 }
 
 @media (min-width: 768px) {
   .cart-image {
-    width: 90px;
-    height: 110px;
-    min-width: 90px;
+    width: 120px;
+    height: 150px;
   }
+}
+
+.ci-body {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.ci-top {
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.min-w-0 {
+  min-width: 0;
+}
+
+.ci-cat {
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--muted);
+}
+
+.ci-name {
+  font-weight: 700;
+  font-size: 16px;
+  letter-spacing: -0.01em;
+  margin: 2px 0 6px;
+}
+
+.ci-variant {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px 14px;
+  font-size: 13px;
+  color: var(--ink-soft);
+}
+
+.ci-variant strong {
+  color: var(--ink);
+  font-weight: 600;
+}
+
+.ci-bottom {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.ci-price {
+  font-weight: 800;
+  font-size: 17px;
 }
 
 .quantity-control {
   display: inline-flex;
   align-items: center;
-  gap: 10px;
-  border: 1px solid #e5e7eb;
-  border-radius: 12px;
-  padding: 4px 10px;
+  border: 1.5px solid var(--line);
+  border-radius: 999px;
+  padding: 2px;
 }
 
 .qty-btn {
+  width: 34px;
+  height: 34px;
   border: none;
+  border-radius: 50%;
   background: transparent;
-  font-weight: 600;
+  display: grid;
+  place-items: center;
+  font-size: 16px;
+}
+
+.qty-btn:not(:disabled):hover {
+  background: var(--ivory);
+}
+
+.qty-btn:disabled {
+  opacity: 0.35;
 }
 
 .qty-value {
-  min-width: 18px;
+  min-width: 26px;
   text-align: center;
+  font-weight: 700;
+  font-size: 14px;
 }
 
 .remove-btn {
+  width: 34px;
+  height: 34px;
+  flex-shrink: 0;
   border: none;
+  border-radius: 50%;
   background: transparent;
-  color: #dc3545;
+  color: var(--muted);
+  display: grid;
+  place-items: center;
+  transition: all 0.2s;
+}
+
+.remove-btn:hover {
+  background: #fdecea;
+  color: var(--danger);
 }
 </style>

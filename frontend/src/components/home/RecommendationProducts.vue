@@ -1,109 +1,60 @@
 <template>
-  <div class="container mt-4 px-3 px-md-0 recommendation-section">
-    <h4>Users like you also liked this</h4>
-
-    <div class="row">
-      <div
-        class="col-6 col-md-3 mb-3"
-        v-for="product in products"
-        :key="product.id"
-      >
-        <div class="card h-100">
-          <router-link
-            :to="`/product/${product.id}`"
-            class="text-decoration-none"
-          >
-            <img :src="product.image" class="card-img-top" alt="product" />
-
-            <div class="card-body">
-              <h6 class="card-title text-dark">{{ product.name }}</h6>
-
-              <!-- Price Section -->
-              <p class="card-text">
-                <span class="fw-bold text-dark">
-                  <template v-if="product.displayPrice !== null"
-                    >Rs. {{ product.displayPrice.toFixed(2) }}</template
-                  >
-                  <template v-else>Select options</template>
-                </span>
-
-                <span
-                  v-if="
-                    product.originalPrice &&
-                    product.displayPrice !== product.originalPrice
-                  "
-                  class="text-muted text-decoration-line-through ms-2"
-                >
-                  Rs. {{ product.originalPrice.toFixed(2) }}
-                </span>
-              </p>
-
-              <!-- Rating -->
-              <p class="text-warning mb-1">
-                <span class="text-warning">{{
-                  renderStars(product.rating)
-                }}</span>
-                {{ product.rating.toFixed(1) }} ({{ product.reviews }} reviews)
-              </p>
-            </div>
-          </router-link>
-
-          <div class="card-footer text-center bg-transparent border-0 pb-3">
-            <router-link
-              :to="`/product/${product.id}`"
-              class="btn btn-dark btn-sm w-100 rounded-pill"
-            >
-              View Product
-            </router-link>
-          </div>
+  <section v-if="loading || products.length" class="section recommendation-section">
+    <div class="container-xxl px-3 px-lg-5">
+      <div class="section-head" v-reveal>
+        <div>
+          <span class="eyebrow">Picked by shoppers like you</span>
+          <h2 class="section-title">You might <em>also love</em></h2>
         </div>
+        <router-link to="/shop" class="link-arrow">
+          Explore more <i class="bi bi-arrow-right"></i>
+        </router-link>
+      </div>
+
+      <div class="rec-grid">
+        <template v-if="loading">
+          <ProductCardSkeleton v-for="n in 4" :key="n" />
+        </template>
+        <template v-else>
+          <div v-for="(product, i) in products" :key="product.id" v-reveal="i * 80">
+            <ProductCard :product="product" />
+          </div>
+        </template>
       </div>
     </div>
-  </div>
+  </section>
 </template>
 
 <script>
 import axios from "axios";
-import { getImageUrl } from "@/utils/imageUrl";
+import { normalizeProduct } from "@/utils/product";
+import ProductCard from "@/components/common/ProductCard.vue";
+import ProductCardSkeleton from "@/components/common/ProductCardSkeleton.vue";
 
 export default {
   name: "RecommendationProducts",
+  components: { ProductCard, ProductCardSkeleton },
 
   data() {
     return {
       products: [],
+      loading: true,
     };
   },
 
   methods: {
     async fetchRecommended() {
+      this.loading = true;
       try {
         const response = await axios.get("/recommendations/users-like-you", {
           params: { limit: 4 },
         });
-        this.products = (response.data || []).map((p) => ({
-          ...p,
-          image: getImageUrl(p.image),
-          displayPrice:
-            Number(p.final_price ?? p.min_variant_price ?? 0) || null,
-          originalPrice: Boolean(p.is_on_sale)
-            ? Number(p.min_variant_price || 0) || null
-            : null,
-          rating: Number(p.reviews_avg_rating ?? 0),
-          reviews: Number(p.reviews_count ?? 0),
-        }));
+        this.products = (response.data || []).map(normalizeProduct);
       } catch (error) {
         console.error("Error fetching recommendations:", error);
+      } finally {
+        this.loading = false;
       }
-    },
-    addToCart(product) {
-      // Basic add to cart logic, can be enhanced
-      console.log("Add to cart:", product);
-    },
-    renderStars(rating) {
-      const filledStars = "★".repeat(Math.floor(rating));
-      const emptyStars = "☆".repeat(5 - Math.floor(rating));
-      return filledStars + emptyStars;
     },
   },
 
@@ -114,24 +65,20 @@ export default {
 </script>
 
 <style scoped>
-.recommendation-section h4 {
-  font-size: 1.1rem;
+.recommendation-section {
+  background: var(--ivory);
 }
 
-@media (min-width: 768px) {
-  .recommendation-section h4 {
-    font-size: 1.25rem;
-  }
+.rec-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 32px 16px;
 }
 
-.card-img-top {
-  height: 160px;
-  object-fit: cover;
-}
-
-@media (min-width: 576px) {
-  .card-img-top {
-    height: 180px;
+@media (min-width: 992px) {
+  .rec-grid {
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    gap: 40px 24px;
   }
 }
 </style>

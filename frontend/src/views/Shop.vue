@@ -10,6 +10,6 @@ import ProductListingLayout from "@/components/productListing/ProductListingLayo
 const route = useRoute()
 const pageTitle = computed(() => {
   const q = route.query.q?.trim()
-  return q ? `Search results for "${q}"` : "Product Listing"
+  return q ? `Search results for "${q}"` : "All Products"
 })
 </script>

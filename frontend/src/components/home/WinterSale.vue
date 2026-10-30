@@ -1,25 +1,19 @@
 <template>
-  <section v-if="banner" class="winter-sale py-5">
-    <div class="container">
-      <div class="row align-items-center g-5">
-        <!-- Text Side -->
-        <div class="col-md-6 sale-text">
-          <h2 class="animate-up">{{ banner.title }}</h2>
-          <p class="animate-up delay-1">
-            {{ banner.description }}
-          </p>
-          <router-link
-            to="/shop"
-            class="sale-btn animate-up delay-2 text-decoration-none d-inline-block"
-          >
-            Shop Collection
-          </router-link>
+  <section v-if="banner" class="section promo">
+    <div class="container-xxl px-3 px-lg-5">
+      <div class="promo-card" v-reveal>
+        <div class="promo-media">
+          <img :src="getImageUrl(banner.image)" :alt="banner.title" loading="lazy" />
         </div>
-
-        <!-- Image Side -->
-        <div class="col-md-6">
-          <div class="image-wrapper shadow-lg">
-            <img :src="getImageUrl(banner.image)" :alt="banner.title" />
+        <div class="promo-copy">
+          <span class="promo-tag"><i class="bi bi-lightning-charge-fill"></i> Limited time</span>
+          <h2 class="promo-title">{{ banner.title }}</h2>
+          <p class="promo-text">{{ banner.description }}</p>
+          <div class="d-flex flex-wrap gap-2">
+            <router-link to="/sales" class="btn btn-dark btn-lg">
+              Shop the sale <i class="bi bi-arrow-right ms-1"></i>
+            </router-link>
+            <router-link to="/shop" class="btn btn-outline-dark btn-lg">Browse all</router-link>
           </div>
         </div>
       </div>
@@ -57,108 +51,79 @@ onMounted(fetchBanner);
 </script>
 
 <style scoped>
-.winter-sale {
-  background: #000000;
-  color: white;
+.promo-card {
+  display: grid;
+  overflow: hidden;
+  border-radius: var(--radius-xl);
+  background: var(--accent-soft);
 }
 
-.winter-sale .container {
-  padding-left: 1rem;
-  padding-right: 1rem;
-}
-
-@media (min-width: 768px) {
-  .winter-sale .container {
-    padding-left: 12px;
-    padding-right: 12px;
+@media (min-width: 992px) {
+  .promo-card {
+    grid-template-columns: 1.1fr 1fr;
+    min-height: 520px;
   }
 }
 
-.sale-text h2 {
-  font-size: 28px;
-  font-weight: 700;
-}
-
-.sale-text p {
-  font-size: 15px;
-  margin: 16px 0;
-  opacity: 0.9;
-}
-
-@media (min-width: 768px) {
-  .sale-text h2 {
-    font-size: 42px;
-  }
-
-  .sale-text p {
-    font-size: 18px;
-    margin: 20px 0;
-  }
-}
-
-.sale-btn {
-  padding: 12px 30px;
-  background: white;
-  color: #050505;
-  border: none;
-  border-radius: 30px;
-  font-weight: 600;
-  transition: 0.3s ease;
-}
-
-.sale-btn:hover {
-  background: black;
-  color: white;
-}
-
-.image-wrapper {
-  aspect-ratio: 4/3;
-  border-radius: 15px;
+.promo-media {
+  position: relative;
+  min-height: 300px;
   overflow: hidden;
 }
 
-.image-wrapper img {
+.promo-media img {
+  position: absolute;
+  inset: 0;
   width: 100%;
   height: 100%;
   object-fit: cover;
-  transition: 0.4s ease;
+  transition: transform 1.4s var(--ease);
 }
 
-.image-wrapper img:hover {
-  transform: scale(1.05);
+.promo-card:hover .promo-media img {
+  transform: scale(1.04);
 }
 
-@media (max-width: 576px) {
-  .sale-text h2 {
-    font-size: 24px;
+.promo-copy {
+  padding: 40px 24px;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+}
+
+@media (min-width: 992px) {
+  .promo-copy {
+    padding: 64px;
   }
-
-  .sale-btn {
-    padding: 10px 24px;
-    font-size: 0.9rem;
-  }
 }
 
-/* Animations */
-.animate-up {
-  animation: slideUp 0.8s cubic-bezier(0.23, 1, 0.32, 1) both;
+.promo-tag {
+  align-self: flex-start;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 14px;
+  border-radius: 999px;
+  background: var(--accent);
+  color: #fff;
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
 }
 
-.delay-1 {
-  animation-delay: 0.2s;
-}
-.delay-2 {
-  animation-delay: 0.4s;
+.promo-title {
+  font-size: clamp(34px, 4.6vw, 64px);
+  line-height: 1;
+  letter-spacing: -0.035em;
+  font-weight: 800;
+  margin: 20px 0 16px;
 }
 
-@keyframes slideUp {
-  from {
-    opacity: 0;
-    transform: translateY(30px);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
+.promo-text {
+  color: var(--ink-2);
+  font-size: 17px;
+  max-width: 440px;
+  margin-bottom: 32px;
 }
 </style>
