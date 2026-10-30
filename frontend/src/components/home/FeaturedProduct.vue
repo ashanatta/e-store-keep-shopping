@@ -4,6 +4,7 @@
       <div class="image-wrapper">
         <img :src="product.image" class="card-img-top" />
 
+        
         <span
           v-if="product.discount_percentage > 0 && product.originalPrice"
           class="badge bg-danger position-absolute top-0 start-0 m-2"
