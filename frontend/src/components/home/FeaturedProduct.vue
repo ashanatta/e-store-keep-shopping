@@ -81,6 +81,7 @@ const renderStars = (rating) => {
   aspect-ratio: 3/4;
 }
 
+
 .card-img-top {
   width: 100%;
   height: 100%;

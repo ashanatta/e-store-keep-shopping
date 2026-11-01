@@ -39,11 +39,14 @@ import ChatList from '@/views/admin/ChatList.vue'
 const routes = [
   { path: '/', name: 'Home', component: Home },
   { path: '/men', name: 'Men', component: Men },
+
   { path: '/women', name: 'Women', component: Women },
   { path: '/kids', name: 'Kids', component: Kids },
+
   { path: '/shop', name: 'Shop', component: Shop },
   { path: '/product/:id', name: 'ProductDetail', component: ProductDetail },
   { path: '/cart', name: 'Cart', component: Cart },
+  
   { path: '/checkout', name: 'Checkout', component: Checkout },
   { path: '/orders', name: 'OrderList', component: OrderList, meta: { requiresAuth: true } },
   { path: '/orders/:id', name: 'OrderDetail', component: OrderDetail, meta: { requiresAuth: true } },
