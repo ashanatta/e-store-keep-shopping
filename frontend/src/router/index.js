@@ -2,80 +2,47 @@
 import { createRouter, createWebHistory } from 'vue-router'
 import { useAuth } from '@/composables/useAuth.js'
 
-// Import your components
-import Home from '../views/Home.vue'
-import Men from '@/views/Men.vue'
-import Women from '@/views/Women.vue'
-import Kids from '@/views/Kids.vue'
-import Shop from '@/views/Shop.vue'
-import ProductDetail from '@/views/ProductDetail.vue'
-import Cart from '@/views/Cart.vue'
-import Checkout from '@/views/Checkout.vue'
-import OrderList from '@/views/OrderList.vue'
-import OrderDetail from '@/views/OrderDetail.vue'
-import Sales from '@/views/Sales.vue'
-import About from '@/views/About.vue'
-import Login from '@/views/Login.vue'
-import Register from '@/views/Register.vue'
-import Profile from '@/views/Profile.vue'
-import AdminLayout from '@/views/admin/AdminLayout.vue'
-import AdminDashboard from '@/views/admin/AdminDashboard.vue'
-import ProductList from '@/views/admin/ProductList.vue'
-import ProductCreate from '@/views/admin/ProductCreate.vue'
-import ProductEdit from '@/views/admin/ProductEdit.vue'
-import CategoryList from '@/views/admin/CategoryList.vue'
-import ColorList from '@/views/admin/ColorList.vue'
-import SizeList from '@/views/admin/SizeList.vue'
-import ReviewList from '@/views/admin/ReviewList.vue'
-import WishlistList from '@/views/admin/WishlistList.vue'
-import CartList from '@/views/admin/CartList.vue'
-import AdminOrderList from '@/views/admin/AdminOrderList.vue'
-import BannerList from '@/views/admin/BannerList.vue'
-import BannerCreate from '@/views/admin/BannerCreate.vue'
-import BannerEdit from '@/views/admin/BannerEdit.vue'
-import ChatList from '@/views/admin/ChatList.vue'
-
 // Define routes
 const routes = [
-  { path: '/', name: 'Home', component: Home },
-  { path: '/men', name: 'Men', component: Men },
+  { path: '/', name: 'Home', component: () => import('@/views/Home.vue') },
+  { path: '/men', name: 'Men', component: () => import('@/views/Men.vue') },
 
-  { path: '/women', name: 'Women', component: Women },
-  { path: '/kids', name: 'Kids', component: Kids },
+  { path: '/women', name: 'Women', component: () => import('@/views/Women.vue') },
+  { path: '/kids', name: 'Kids', component: () => import('@/views/Kids.vue') },
 
-  { path: '/shop', name: 'Shop', component: Shop },
-  { path: '/product/:id', name: 'ProductDetail', component: ProductDetail },
-  { path: '/cart', name: 'Cart', component: Cart },
+  { path: '/shop', name: 'Shop', component: () => import('@/views/Shop.vue') },
+  { path: '/product/:id', name: 'ProductDetail', component: () => import('@/views/ProductDetail.vue') },
+  { path: '/cart', name: 'Cart', component: () => import('@/views/Cart.vue') },
   
-  { path: '/checkout', name: 'Checkout', component: Checkout },
-  { path: '/orders', name: 'OrderList', component: OrderList, meta: { requiresAuth: true } },
-  { path: '/orders/:id', name: 'OrderDetail', component: OrderDetail, meta: { requiresAuth: true } },
-  { path: '/sales', name: 'Sales', component: Sales },
-  { path: '/about', name: 'About', component: About },
-  { path: '/login', name: 'Login', component: Login },
-  { path: '/register', name: 'Register', component: Register },
-  { path: '/profile', name: 'Profile', component: Profile, meta: { requiresAuth: true } },
+  { path: '/checkout', name: 'Checkout', component: () => import('@/views/Checkout.vue') },
+  { path: '/orders', name: 'OrderList', component: () => import('@/views/OrderList.vue'), meta: { requiresAuth: true } },
+  { path: '/orders/:id', name: 'OrderDetail', component: () => import('@/views/OrderDetail.vue'), meta: { requiresAuth: true } },
+  { path: '/sales', name: 'Sales', component: () => import('@/views/Sales.vue') },
+  { path: '/about', name: 'About', component: () => import('@/views/About.vue') },
+  { path: '/login', name: 'Login', component: () => import('@/views/Login.vue') },
+  { path: '/register', name: 'Register', component: () => import('@/views/Register.vue') },
+  { path: '/profile', name: 'Profile', component: () => import('@/views/Profile.vue'), meta: { requiresAuth: true } },
   {
     path: '/admin',
     name: 'Admin',
-    component: AdminLayout,
+    component: () => import('@/views/admin/AdminLayout.vue'),
     redirect: '/admin/dashboard',
     children: [
-      { path: 'dashboard', name: 'AdminDashboard', component: AdminDashboard },
-      { path: 'products', name: 'AdminProducts', component: ProductList },
-      { path: 'products/create', name: 'AdminProductCreate', component: ProductCreate },
-      { path: 'products/:id/edit', name: 'AdminProductEdit', component: ProductEdit },
-      { path: 'categories', name: 'AdminCategories', component: CategoryList },
-      { path: 'colors', name: 'AdminColors', component: ColorList },
-      { path: 'sizes', name: 'AdminSizes', component: SizeList },
-      { path: 'reviews', name: 'AdminReviews', component: ReviewList },
-      { path: 'wishlists', name: 'AdminWishlists', component: WishlistList },
-      { path: 'carts', name: 'AdminCarts', component: CartList },
-      { path: 'orders', name: 'AdminOrders', component: AdminOrderList },
-      { path: 'banners', name: 'AdminBanners', component: BannerList },
-      { path: 'banners/create', name: 'AdminBannerCreate', component: BannerCreate },
-      { path: 'banners/:id/edit', name: 'AdminBannerEdit', component: BannerEdit },
-      { path: 'chats', name: 'AdminChats', component: ChatList },
+      { path: 'dashboard', name: 'AdminDashboard', component: () => import('@/views/admin/AdminDashboard.vue') },
+      { path: 'products', name: 'AdminProducts', component: () => import('@/views/admin/ProductList.vue') },
+      { path: 'products/create', name: 'AdminProductCreate', component: () => import('@/views/admin/ProductCreate.vue') },
+      { path: 'products/:id/edit', name: 'AdminProductEdit', component: () => import('@/views/admin/ProductEdit.vue') },
+      { path: 'categories', name: 'AdminCategories', component: () => import('@/views/admin/CategoryList.vue') },
+      { path: 'colors', name: 'AdminColors', component: () => import('@/views/admin/ColorList.vue') },
+      { path: 'sizes', name: 'AdminSizes', component: () => import('@/views/admin/SizeList.vue') },
+      { path: 'reviews', name: 'AdminReviews', component: () => import('@/views/admin/ReviewList.vue') },
+      { path: 'wishlists', name: 'AdminWishlists', component: () => import('@/views/admin/WishlistList.vue') },
+      { path: 'carts', name: 'AdminCarts', component: () => import('@/views/admin/CartList.vue') },
+      { path: 'orders', name: 'AdminOrders', component: () => import('@/views/admin/AdminOrderList.vue') },
+      { path: 'banners', name: 'AdminBanners', component: () => import('@/views/admin/BannerList.vue') },
+      { path: 'banners/create', name: 'AdminBannerCreate', component: () => import('@/views/admin/BannerCreate.vue') },
+      { path: 'banners/:id/edit', name: 'AdminBannerEdit', component: () => import('@/views/admin/BannerEdit.vue') },
+      { path: 'chats', name: 'AdminChats', component: () => import('@/views/admin/ChatList.vue') },
     ],
     meta: { requiresAuth: true, requiresAdmin: true }
   }
