@@ -14,12 +14,15 @@ const routes = [
   { path: '/product/:id', name: 'ProductDetail', component: () => import('@/views/ProductDetail.vue') },
   { path: '/cart', name: 'Cart', component: () => import('@/views/Cart.vue') },
   
+
   { path: '/checkout', name: 'Checkout', component: () => import('@/views/Checkout.vue') },
   { path: '/orders', name: 'OrderList', component: () => import('@/views/OrderList.vue'), meta: { requiresAuth: true } },
   { path: '/orders/:id', name: 'OrderDetail', component: () => import('@/views/OrderDetail.vue'), meta: { requiresAuth: true } },
   { path: '/sales', name: 'Sales', component: () => import('@/views/Sales.vue') },
+
   { path: '/about', name: 'About', component: () => import('@/views/About.vue') },
   { path: '/login', name: 'Login', component: () => import('@/views/Login.vue') },
+  
   { path: '/register', name: 'Register', component: () => import('@/views/Register.vue') },
   { path: '/profile', name: 'Profile', component: () => import('@/views/Profile.vue'), meta: { requiresAuth: true } },
   {
