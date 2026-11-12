@@ -49,6 +49,9 @@ const routes = [
     ],
     meta: { requiresAuth: true, requiresAdmin: true }
   }
+
+
+  
 ]
 
 // Create router
