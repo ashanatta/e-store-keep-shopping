@@ -7,8 +7,13 @@ const routes = [
   { path: '/', name: 'Home', component: () => import('@/views/Home.vue') },
   { path: '/men', name: 'Men', component: () => import('@/views/Men.vue') },
 
+
+
+  
   { path: '/women', name: 'Women', component: () => import('@/views/Women.vue') },
   { path: '/kids', name: 'Kids', component: () => import('@/views/Kids.vue') },
+
+
 
   { path: '/shop', name: 'Shop', component: () => import('@/views/Shop.vue') },
   { path: '/product/:id', name: 'ProductDetail', component: () => import('@/views/ProductDetail.vue') },
