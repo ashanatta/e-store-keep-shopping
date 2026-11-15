@@ -6,28 +6,17 @@ import { useAuth } from '@/composables/useAuth.js'
 const routes = [
   { path: '/', name: 'Home', component: () => import('@/views/Home.vue') },
   { path: '/men', name: 'Men', component: () => import('@/views/Men.vue') },
-
-
-
-  
   { path: '/women', name: 'Women', component: () => import('@/views/Women.vue') },
   { path: '/kids', name: 'Kids', component: () => import('@/views/Kids.vue') },
-
-
-
   { path: '/shop', name: 'Shop', component: () => import('@/views/Shop.vue') },
   { path: '/product/:id', name: 'ProductDetail', component: () => import('@/views/ProductDetail.vue') },
   { path: '/cart', name: 'Cart', component: () => import('@/views/Cart.vue') },
-  
-
   { path: '/checkout', name: 'Checkout', component: () => import('@/views/Checkout.vue') },
   { path: '/orders', name: 'OrderList', component: () => import('@/views/OrderList.vue'), meta: { requiresAuth: true } },
   { path: '/orders/:id', name: 'OrderDetail', component: () => import('@/views/OrderDetail.vue'), meta: { requiresAuth: true } },
   { path: '/sales', name: 'Sales', component: () => import('@/views/Sales.vue') },
-
   { path: '/about', name: 'About', component: () => import('@/views/About.vue') },
   { path: '/login', name: 'Login', component: () => import('@/views/Login.vue') },
-  
   { path: '/register', name: 'Register', component: () => import('@/views/Register.vue') },
   { path: '/profile', name: 'Profile', component: () => import('@/views/Profile.vue'), meta: { requiresAuth: true } },
   {
