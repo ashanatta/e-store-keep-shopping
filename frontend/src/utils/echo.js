@@ -9,6 +9,7 @@ const reverbHost = import.meta.env.VITE_REVERB_HOST;
 const reverbPort = import.meta.env.VITE_REVERB_PORT || 8080;
 const reverbScheme = import.meta.env.VITE_REVERB_SCHEME || 'http';
 
+
 let echo;
 
 if (reverbKey && reverbHost) {
